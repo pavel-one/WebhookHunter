@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+      args:
+        docker_id: ${DOCKER_UID}
+        docker_user: ${DOCKER_USER}
+    user: ${DOCKER_USER}
+    ports:
+      - "2345:2345"
+      - "8080:8080"
+    volumes:
+      - .:/usr/src/app
+      - ${GOPATH}/pkg:/go/pkg
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./docker/pg/data:/var/lib/postgresql/data
+    ports:
+      - ${DB_PORT}:5432
