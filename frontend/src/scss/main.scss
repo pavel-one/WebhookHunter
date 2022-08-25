@@ -1,3 +1,38 @@
-.test {
-  background: #111;
+@import "../fonts/bebasneue/bebasneue.css";
+@import url('https://fonts.cdnfonts.com/css/quicksand');
+@import "~@fortawesome/fontawesome-free/css/all.min.css";
+
+$accent-font: 'Bebas Neue', sans-serif;
+$default-font: 'Quicksand Book', sans-serif;
+$accent-color: #3ce09d;
+$accent-shadow: 0px 8px 24px 0px rgba(60, 224, 157, 0.5);
+$default-shadow: 0 0 20px rgb(0 0 0 / 90%);
+$shadow-color: #404040;
+$text-color: #909090;
+$text-color2: #5a5a5a;
+
+* {
+  color: $text-color;
+  font-family: $default-font;
+}
+.logo {
+  display: flex;
+  flex-direction: row;
+  font-size: 5em;
+  text-shadow: 0 0 20px rgb(0 0 0 / 90%);
+  .text {
+    font-family: $accent-font;
+    font-weight: 700;
+    color: #404040
+  }
+  .dot {
+    color: $accent-color;
+  }
+}
+body {
+  background: #151515;
+}
+
+.accent-color {
+  color: $accent-color;
 }
