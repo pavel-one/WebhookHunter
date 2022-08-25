@@ -7,5 +7,6 @@
     <div class="text">
       ONE
     </div>
+    <div class="post-title">HOOK HUNTER</div>
   </div>
 </template>

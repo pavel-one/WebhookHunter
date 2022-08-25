@@ -1,4 +1,4 @@
-@import "../fonts/bebasneue/bebasneue.css";
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import url('https://fonts.cdnfonts.com/css/quicksand');
 @import "~@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -6,33 +6,145 @@ $accent-font: 'Bebas Neue', sans-serif;
 $default-font: 'Quicksand Book', sans-serif;
 $accent-color: #3ce09d;
 $accent-shadow: 0px 8px 24px 0px rgba(60, 224, 157, 0.5);
-$default-shadow: 0 0 20px rgb(0 0 0 / 90%);
+$default-shadow: 0 0 20px rgb(0 0 0 / 80%);
 $shadow-color: #404040;
 $text-color: #909090;
 $text-color2: #5a5a5a;
 
 * {
-  color: $text-color;
   font-family: $default-font;
 }
+html {
+  width: 100%;
+  height: 100%;
+}
+body {
+  background: #151515;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#app {
+  width: 400px;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+}
+
 .logo {
   display: flex;
   flex-direction: row;
   font-size: 5em;
   text-shadow: 0 0 20px rgb(0 0 0 / 90%);
+  font-family: $accent-font;
+  font-weight: bold;
+  letter-spacing: 1px;
+  position: relative;
   .text {
+    color: #404040;
     font-family: $accent-font;
-    font-weight: 700;
-    color: #404040
+    font-weight: bold;
   }
   .dot {
-    color: $accent-color;
+    color: #3ce09d;
+    font-family: $accent-font;
+    font-weight: bold;
+    text-shadow: 0 0 20px #20c984;
+  }
+  .post-title {
+    font-family: $accent-font;
+    text-shadow: 0 0 20px #20c984;
+    animation: neon 3s infinite;
+    animation-timing-function: linear;
+    position: absolute;
+    font-size: .3em;
+    left: 80px;
+    bottom: -10px;
+    color: #3ce09d;
+    padding: 3px 5px;
+    font-weight: bold;
   }
 }
-body {
-  background: #151515;
+
+.btn-wrapper {
+  background: darken($accent-color, 10%);
+  color: #111;
+  display: flex;
+  padding: 0.5rem 0.7rem;
+  border-radius: 7px;
+  font-size: 1em;
+  transition: .25s;
+  .btn-icon {
+    margin-right: 10px;
+  }
+}
+
+
+.btn {
+  display: inline-block;
+  transition: .25s;
+  box-shadow: $default-shadow;
+  &:hover {
+    cursor: pointer;
+    transform: translateY(-2px);
+    .btn-wrapper {
+      background: darken($accent-color, 15%);
+    }
+  }
+
+  &.btn-bg {
+    .btn-wrapper {
+      background: transparent;
+      color: #eaeaea;
+      border: 1px solid $accent-color;
+    }
+  }
 }
 
 .accent-color {
   color: $accent-color;
+}
+
+@-webkit-keyframes neon {
+  0% {
+    opacity: 1;
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  60% {
+    opacity: 0;
+  }
+
+  63% {
+    opacity: 1;
+  }
+
+  93% {
+    opacity: 1;
+  }
+
+  95% {
+    opacity: 0;
+  }
+
+  97% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
