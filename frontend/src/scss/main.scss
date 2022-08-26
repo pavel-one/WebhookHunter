@@ -32,11 +32,27 @@ body {
   display: flex;
   justify-content: center;
 }
-
+.logo-wrapper {
+  font-size: 10em;
+  .post-title {
+    font-family: $accent-font;
+    text-shadow: 0 0 20px #20c984;
+    animation: neon 3s infinite;
+    animation-timing-function: linear;
+    //position: absolute;
+    font-size: .3em;
+    //left: 80px;
+    //bottom: -10px;
+    color: #3ce09d;
+    padding: 3px 5px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: -45px;
+  }
+}
 .logo {
   display: flex;
   flex-direction: row;
-  font-size: 5em;
   text-shadow: 0 0 20px rgb(0 0 0 / 90%);
   font-family: $accent-font;
   font-weight: bold;
@@ -53,39 +69,30 @@ body {
     font-weight: bold;
     text-shadow: 0 0 20px #20c984;
   }
-  .post-title {
-    font-family: $accent-font;
-    text-shadow: 0 0 20px #20c984;
-    animation: neon 3s infinite;
-    animation-timing-function: linear;
-    position: absolute;
-    font-size: .3em;
-    left: 80px;
-    bottom: -10px;
-    color: #3ce09d;
-    padding: 3px 5px;
-    font-weight: bold;
-  }
 }
-
-.btn-wrapper {
-  background: darken($accent-color, 10%);
-  color: #111;
-  display: flex;
-  padding: 0.5rem 0.7rem;
-  border-radius: 7px;
-  font-size: 1em;
-  transition: .25s;
-  .btn-icon {
-    margin-right: 10px;
-  }
-}
-
 
 .btn {
   display: inline-block;
   transition: .25s;
   box-shadow: $default-shadow;
+  &.lg {
+    .btn-wrapper {
+      font-size: 1.5em;
+      padding: 0.7rem 1rem;
+    }
+  }
+  .btn-wrapper {
+    background: darken($accent-color, 10%);
+    color: #111;
+    display: flex;
+    padding: 0.5rem 0.7rem;
+    border-radius: 7px;
+    font-size: 1em;
+    transition: .25s;
+    .btn-icon {
+      margin-right: 10px;
+    }
+  }
   &:hover {
     cursor: pointer;
     transform: translateY(-2px);

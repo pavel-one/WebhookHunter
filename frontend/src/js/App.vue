@@ -4,7 +4,7 @@
       <logo></logo>
       <br>
       <br>
-      <btn class="center" icon="fa-solid fa-play">Получить</btn>
+      <btn @click="click" class="center lg" icon="fa-solid fa-play">Получить</btn>
     </div>
   </div>
 </template>
@@ -14,9 +14,9 @@ import Logo from "./components/Logo";
 import Btn from "./components/Btn";
 export default {
   components: {Btn, Logo},
-  data: function () {
-    return {
-      message: 'Hi vuejs!',
+  methods: {
+    click: function () {
+      console.log('test')
     }
   }
 }

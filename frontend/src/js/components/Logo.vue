@@ -1,11 +1,13 @@
 <template>
-  <div class="logo">
-    <div class="text">
-      PAVEL
-    </div>
-    <div class="dot">.</div>
-    <div class="text">
-      ONE
+  <div class="logo-wrapper">
+    <div class="logo">
+      <div class="text">
+        PAVEL
+      </div>
+      <div class="dot">.</div>
+      <div class="text">
+        ONE
+      </div>
     </div>
     <div class="post-title">HOOK HUNTER</div>
   </div>
