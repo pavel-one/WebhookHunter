@@ -1,23 +1,22 @@
 <template>
   <div>
-    <div style="display: flex; flex-direction: column; align-items: center;">
-      <logo></logo>
-      <br>
-      <br>
-      <btn @click="click" class="center lg" icon="fa-solid fa-play">Получить</btn>
-    </div>
+    <home v-if="!login"></home>
+    <dashboard v-else></dashboard>
   </div>
 </template>
 
 <script>
-import Logo from "./components/Logo";
-import Btn from "./components/Btn";
+import Home from "./Home";
+import Dashboard from "./Dashboard";
 export default {
-  components: {Btn, Logo},
-  methods: {
-    click: function () {
-      console.log('test')
+  components: {Dashboard, Home},
+  data: function () {
+    return {
+      login: false
     }
+  },
+  mounted() {
+    console.log(this.login)
   }
 }
 </script>

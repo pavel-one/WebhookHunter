@@ -40,7 +40,7 @@ func (a *App) Init() {
 	a.Router = mux.NewRouter()
 }
 
-func (a *App) Run(port string) {
+func (a *App) ApiRun(port string) {
 	srv := &http.Server{
 		Handler:      a.Router,
 		Addr:         ":" + port,
