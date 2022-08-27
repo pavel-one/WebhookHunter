@@ -1,9 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/gorilla/websocket"
+	"github.com/pavel-one/WebhookWatcher/internal/base"
+	"github.com/pavel-one/WebhookWatcher/internal/controllers"
+	"log"
 	"net/http"
+	"os"
 )
 
 var upgrader = websocket.Upgrader{
@@ -13,36 +17,33 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	//app := new(base.App)
-	//app.Init()
-	//
-	//app.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	//	fmt.Fprintf(w, "Hello World!")
-	//}).Methods("GET")
-	//
-	//app.Run("8080")
+	fatalChan := make(chan error, 1)
 
-	http.HandleFunc("/", echo)
-	http.ListenAndServe(":8080", nil)
-}
+	app := new(base.App)
+	app.Init()
 
-func echo(w http.ResponseWriter, r *http.Request) {
-	connection, _ := upgrader.Upgrade(w, r, nil)
-	defer connection.Close()
+	hunterController := new(controllers.HunterController)
+	hunterController.Init(app.DB)
 
-	for {
-		mt, message, err := connection.ReadMessage()
+	app.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		err := json.NewEncoder(w).Encode(map[string]string{
+			"status":  "ok",
+			"version": "1.0",
+		})
 
-		if err != nil || mt == websocket.CloseMessage {
-			break // Выходим из цикла, если клиент пытается закрыть соединение или связь с клиентом прервана
+		if err != nil {
+			return
 		}
+	}).Methods("GET")
 
-		connection.WriteMessage(websocket.TextMessage, message)
+	app.Router.HandleFunc("/", hunterController.Create).Methods("GET")
 
-		go messageHandler(message)
+	go app.ApiRun("8080", fatalChan)
+
+	err := <-fatalChan
+	if err != nil {
+		log.Printf("[FATAL] %v", err)
+		os.Exit(1)
 	}
-}
-
-func messageHandler(message []byte) {
-	fmt.Println(string(message))
 }

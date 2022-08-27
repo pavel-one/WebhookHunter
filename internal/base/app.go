@@ -1,6 +1,7 @@
 package base
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -15,6 +16,7 @@ import (
 type App struct {
 	DB     *sqlx.DB
 	Router *mux.Router
+	Server *http.Server
 }
 
 func (a *App) Init() {
@@ -40,17 +42,19 @@ func (a *App) Init() {
 	a.Router = mux.NewRouter()
 }
 
-func (a *App) ApiRun(port string) {
-	srv := &http.Server{
+func (a *App) ApiRun(port string, ch chan error) {
+	a.Server = &http.Server{
 		Handler:      a.Router,
 		Addr:         ":" + port,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
+	defer a.Server.Close()
+
 	log.Printf("[DEBUG] Running server on port %s", port)
 
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalln(fmt.Sprintf("[FATAL] Error start server: %s", err.Error()))
+	if err := a.Server.ListenAndServe(); err != nil {
+		ch <- errors.New(fmt.Sprintf("Error server: %s", err.Error()))
 	}
 }
