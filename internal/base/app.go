@@ -58,3 +58,23 @@ func (a *App) ApiRun(port string, ch chan error) {
 		ch <- errors.New(fmt.Sprintf("Error server: %s", err.Error()))
 	}
 }
+
+func (a *App) Close() {
+	if err := a.DB.Close(); err != nil {
+		log.Fatalf("[FATAL] Unable to close database: %v", err)
+		return
+	}
+
+	if err := a.Server.Close(); err != nil {
+		log.Fatalf("[FATAL] Unable to close server: %v", err)
+		return
+	}
+}
+
+func (a *App) GET(path string, method func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.HandleFunc(path, method).Methods("GET")
+}
+
+func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.HandleFunc(path, method).Methods("POST")
+}
