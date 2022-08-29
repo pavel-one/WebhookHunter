@@ -5,16 +5,10 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile
-      args:
-        docker_id: ${DOCKER_UID}
-        docker_user: ${DOCKER_USER}
-    user: ${DOCKER_USER}
     ports:
-      - "2345:2345"
       - "80:8080"
     volumes:
       - .:/usr/src/app
-      - ${GOPATH}/pkg:/go/pkg
   db:
     image: postgres:alpine
     restart: unless-stopped

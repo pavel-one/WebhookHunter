@@ -1,6 +1,13 @@
 include ${PWD}/.env
 export
 
+build:
+	docker compose run --rm app sh -c "CGO_ENABLED=0 go build -o tmp/app cmd/main.go"
+run:
+	docker compose run --rm app sh -c "CGO_ENABLED=0 go build -o tmp/app cmd/main.go && ./tmp/app"
+#run:
+#	make build
+#	docker compose run --rm app ./tmp/app
 up:
 	docker-compose up -d && make log
 down:
