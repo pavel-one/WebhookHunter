@@ -1,0 +1,7 @@
+- name: Local
+  hosts:
+    - 127.0.0.1
+  roles:
+    - local
+  gather_facts: no
+  serial: 2

@@ -1,0 +1,46 @@
+- name: Check if the directory exists
+  stat:
+    path: "{{ BASE_PATH }}/docker/pg-data"
+  register: dir_to_check
+  tags: configuration
+
+- name: Create docker compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: '{{BASE_PATH}}docker-compose.yml'
+  tags: configuration
+
+- name: Create .env file
+  template:
+    src: .env.j2
+    dest: '{{BASE_PATH}}.env'
+  tags: configuration
+
+- name: Build app
+  shell: |
+    make build.app
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration
+
+- name: Start app
+  shell: |
+    make down
+    docker-compose up -d
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration
+
+- name: Pause for 2 minutes to build database
+  ansible.builtin.pause:
+    minutes: 2
+  when: not dir_to_check.stat.exists
+  tags: configuration
+
+- name: Migrate
+  shell: |
+    make migrate.up
+    docker-compose down app
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration

@@ -2,9 +2,7 @@ version: '3'
 
 services:
   app:
-    build:
-      context: ./
-      dockerfile: ./docker/Dockerfile
+    image: orendat/go:latest
     ports:
       - "80:8080"
     volumes:
