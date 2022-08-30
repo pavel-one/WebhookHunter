@@ -1,21 +1,9 @@
-BASE_PATH: ${PWD}/../../
-BASE_NAME: point_one
+BASE_PATH: ${PWD}/../
+BASE_NAME: watcher
 ENVIRONMENT:
   TZ: "Europe/Moscow"
-  POSTGRES_HOST: pg
-  POSTGRES_PORT: 5432
-  POSTGRES_PASSWORD: db
-  POSTGRES_USER: db
-  POSTGRES_DB: db
-  POSTGRES_DB_SCHEMA: public
-  RTDS_URL: http://rc.rt-ds.dengisrazy.ru/v1/
-  RTDS_USER: crm
-  RTDS_PASSWORD: bL3rX1wU7xX2pM8l
-  UT1CDS_URL: http://192.168.233.247/ut_ds_crm/hs/GAPI/
-  UT1CDS_USER: БезменовАВ
-  UT1CDS_PASSWORD: 1
-  GIN_MODE: debug
-  AMBER_URL: https://amber-test-api.dengisrazy.ru/rest-api/v1/
-  UZ1C_URL: http://192.168.233.247:80/uz_ds_develop_ktelekbaeva/hs/GAPI/
-  UZ1C_USER: int
-  UZ1C_PASSWORD: 123
+  DB_NAME: db
+  DB_USER: db
+  DB_PASSWORD: db
+  DB_HOST: db
+  DB_PORT: 5432

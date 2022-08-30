@@ -1,6 +1,6 @@
 - name: Check if the directory exists
   stat:
-    path: "{{ BASE_PATH }}/docker/pg-data"
+    path: "{{ BASE_PATH }}docker/pg/data"
   register: dir_to_check
   tags: configuration
 
@@ -18,7 +18,7 @@
 
 - name: Build app
   shell: |
-    make build.app
+    make build
   args:
     chdir: '{{ BASE_PATH }}'
   tags: configuration
@@ -37,10 +37,15 @@
   when: not dir_to_check.stat.exists
   tags: configuration
 
+- name: Pause for 1 minutes to build database
+  ansible.builtin.pause:
+    minutes: 1
+  when: dir_to_check.stat.exists
+  tags: configuration
+
 - name: Migrate
   shell: |
     make migrate.up
-    docker-compose down app
   args:
     chdir: '{{ BASE_PATH }}'
   tags: configuration

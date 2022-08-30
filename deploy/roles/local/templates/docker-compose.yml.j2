@@ -4,9 +4,12 @@ services:
   app:
     image: orendat/go:latest
     ports:
+      - "2345:2345"
       - "80:8080"
     volumes:
       - .:/usr/src/app
+      - ${GOPATH}/pkg:/go/pkg # для синхронизиации пакетов с IDE
+    command: ["air"]
   db:
     image: postgres:alpine
     restart: unless-stopped
@@ -18,4 +21,4 @@ services:
     volumes:
       - ./docker/pg/data:/var/lib/postgresql/data
     ports:
-      - ${DB_PORT}:5432
+      - ${DB_PORT:-5432}:5432
