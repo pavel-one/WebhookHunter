@@ -2,6 +2,7 @@ BASE_PATH: ${PWD}/../
 BASE_NAME: watcher
 ENVIRONMENT:
   TZ: "Europe/Moscow"
+  DOMAIN: "ww.loc"
   DB_NAME: db
   DB_USER: db
   DB_PASSWORD: db

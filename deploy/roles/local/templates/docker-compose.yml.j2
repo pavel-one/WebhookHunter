@@ -4,6 +4,7 @@ services:
   nginx:
     image: nginx:stable-alpine
     volumes:
+      - ./docker/nginx/templates:/etc/nginx/templates
       - ./frontend:/var/www/frontend
     ports:
       - "80:80"

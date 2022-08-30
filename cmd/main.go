@@ -16,6 +16,8 @@ func main() {
 	hunterController := new(controllers.HunterController)
 	hunterController.Init(app.DB)
 
+	app.Router.Use(controllers.LoggingMiddleware)
+	app.Router.NotFoundHandler = controllers.Handler404
 	app.GET("/", hunterController.Index)
 	app.POST("/", hunterController.Create)
 
