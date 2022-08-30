@@ -1,13 +1,24 @@
 version: '3'
 
 services:
+  nginx:
+    image: nginx:stable-alpine
+    volumes:
+      - ./frontend:/var/www/frontend
+    ports:
+      - "80:80"
+    command: [nginx-debug, '-g', 'daemon off;']
   app:
     image: orendat/go:latest
+    user: "{{USER}}:{{GROUP}}"
+    environment:
+      - GOCACHE=/usr/src/app/tmp/cache
     ports:
       - "2345:2345"
-      - "80:8080"
     volumes:
       - .:/usr/src/app
+      - /etc/passwd:/etc/passwd
+      - /etc/shadow:/etc/shadow
       - ${GOPATH}/pkg:/go/pkg # для синхронизиации пакетов с IDE
     command: ["air"]
   db:
