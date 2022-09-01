@@ -7,5 +7,5 @@ type HunterResponse struct {
 }
 
 func (r *HunterResponse) Init(hunter *models.Hunter) {
-	r.URI = "test"
+	r.URI = hunter.Slug
 }
