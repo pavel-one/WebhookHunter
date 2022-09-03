@@ -35,7 +35,7 @@ html {
 }
 
 body {
-  background-image: linear-gradient( 94.3deg,  rgba(26,33,64,1) 10.9%, rgba(81,84,115,1) 87.1% );
+  background: #151515;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@ body {
 }
 
 .dashboard-container {
-  background: #222222;
+  //background: #191919;
   min-width: 800px;
   display: flex;
   flex-direction: row;
