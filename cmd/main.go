@@ -19,6 +19,7 @@ func main() {
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
 	app.GET("/", hunterController.Index)
+	app.POST("/check/", hunterController.Check)
 	app.POST("/", hunterController.Create)
 
 	go app.ApiRun("8080", fatalChan)

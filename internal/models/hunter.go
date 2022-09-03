@@ -60,3 +60,7 @@ func (h *Hunter) Create(db *sqlx.DB) error {
 func (h *Hunter) Find(db *sqlx.DB, id string) error {
 	return db.Get(h, "SELECT * FROM hunters WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
 }
+
+func (h *Hunter) FindBySlug(db *sqlx.DB, slug string) error {
+	return db.Get(h, "SELECT * FROM hunters WHERE slug=$1 LIMIT 1", slug)
+}

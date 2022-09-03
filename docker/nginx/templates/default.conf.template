@@ -7,9 +7,9 @@ server {
     index index.html;
 
     location / {
-        gzip_static on;
-        expires max;
-        add_header Cache-Control public;
+        #gzip_static on;
+        #expires max;
+        #add_header Cache-Control public;
         try_files $uri $uri/ =404;
     }
 

@@ -12,11 +12,18 @@
 <script>
 import Logo from "./components/Logo";
 import Btn from "./components/Btn";
+import axios from "axios";
 export default {
   components: {Btn, Logo},
   methods: {
-    click: function () {
-      console.log('test')
+    click: async function () {
+      let response = await axios.post('/api/v1/', {})
+
+      if (response.data.uri) {
+        window.location.href = window.location.protocol + "//" + response.data.uri + "." + window.location.hostname
+      }
+
+      console.log()
     }
   }
 }
