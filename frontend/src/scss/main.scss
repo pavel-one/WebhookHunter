@@ -35,7 +35,7 @@ html {
 }
 
 body {
-  background: #151515;
+  background-image: linear-gradient( 94.3deg,  rgba(26,33,64,1) 10.9%, rgba(81,84,115,1) 87.1% );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,17 +44,18 @@ body {
 }
 
 .dashboard-container {
+  background: #222222;
   min-width: 800px;
   display: flex;
   flex-direction: row;
   //justify-content: center;
   box-shadow: $default-shadow;
+  height: 600px;
   .menu {
     border-right: 1px solid #222222;
     width: 300px;
-    max-height: 500px;
+    height: 100%;
     overflow-y: auto;
-
     .menu-item {
       padding: 10px 20px;
       transition: .5s;
@@ -87,8 +88,8 @@ body {
   }
 
   .logs {
-    max-height: 500px;
     width: 600px;
+    height: 100%;
     overflow-y: auto;
 
     .log-item {
