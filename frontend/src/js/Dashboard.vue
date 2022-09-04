@@ -209,6 +209,49 @@ export default {
         }
       ]
     }
+  },
+  methods: {
+    connect: function (timer) {
+      let socket = new WebSocket("ws://" + document.location.host + "/ws/");
+
+      let timerMessage
+      socket.onopen = e => {
+        if (timer) {
+          clearInterval(timer)
+        }
+
+        let i = 0;
+        timerMessage = setInterval(function () {
+          i++
+          socket.send("Меня зовут Джон "+i);
+        }, 500)
+      };
+
+      socket.onclose = event => {
+        clearInterval(timerMessage)
+
+        if (event.wasClean) {
+          console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+        } else {
+          let timerid = setInterval(() => {
+            console.log('onclose! new reconnect')
+            this.connect(timerid)
+          }, 2000)
+        }
+      };
+
+      socket.onmessage = function(event) {
+        console.log(event.data)
+      };
+
+      socket.onerror = event => {
+        console.log("ERROR!!", event)
+        socket.close()
+      }
+    }
+  },
+  mounted() {
+    this.connect()
   }
 }
 </script>

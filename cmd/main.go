@@ -13,6 +13,12 @@ func main() {
 	app := new(base.App)
 	app.Init()
 
+	socket := new(base.App)
+	socket.Init()
+
+	socketController := new(controllers.SocketController)
+	socketController.Init(socket.DB)
+
 	hunterController := new(controllers.HunterController)
 	hunterController.Init(app.DB)
 
@@ -22,7 +28,12 @@ func main() {
 	app.POST("/check/", hunterController.Check)
 	app.POST("/", hunterController.Create)
 
-	go app.ApiRun("8080", fatalChan)
+	socket.Router.Use(controllers.LoggingMiddleware)
+	socket.Router.NotFoundHandler = controllers.Handler404
+	socket.GET("/", socketController.Test)
+
+	go app.ApiRun("80", fatalChan)
+	go socket.ApiRun("8080", fatalChan)
 
 	err := <-fatalChan
 	if err != nil {
