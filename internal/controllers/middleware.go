@@ -14,7 +14,7 @@ func handler404(w http.ResponseWriter, r *http.Request) {
 
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[DEBUG] [%s] %s %s", r.Method, r.URL.String())
+		log.Printf("[DEBUG] [%s] %s", r.Method, r.URL.String())
 		next.ServeHTTP(w, r)
 	})
 }

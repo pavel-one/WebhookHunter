@@ -3,10 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/resources"
-	"net/http"
 )
 
 type HunterController struct {
@@ -30,7 +31,6 @@ func (c *HunterController) Create(w http.ResponseWriter, r *http.Request) {
 
 	response.Init(hunter)
 	c.JSON(w, http.StatusCreated, response)
-	return
 }
 
 func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
@@ -68,5 +68,4 @@ func (c *HunterController) Index(w http.ResponseWriter, r *http.Request) {
 		"version": "1.0",
 	})
 
-	return
 }
