@@ -12,7 +12,7 @@ run:
 up:
 	docker-compose up -d && make log
 down:
-	docker-compose down
+	docker-compose stop
 exec:
 	docker-compose exec app sh
 migrate:

@@ -20,7 +20,7 @@ services:
       - .:/usr/src/app
       - /etc/passwd:/etc/passwd
       - /etc/shadow:/etc/shadow
-      - ${GOPATH}/pkg:/go/pkg # для синхронизиации пакетов с IDE
+      - ~/go/pkg:/go/pkg # для синхронизиации пакетов с IDE
     command: ["air"]
   db:
     image: postgres:alpine
@@ -30,7 +30,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ./docker/pg/data:/var/lib/postgresql/data
+#    volumes:
+#      - ./docker/pg/data:/var/lib/postgresql/data
     ports:
       - ${DB_PORT:-5432}:5432
