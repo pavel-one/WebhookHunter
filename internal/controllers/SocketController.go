@@ -20,6 +20,7 @@ func (c *SocketController) Init(db *sqlx.DB) {
 	c.DB = db
 	c.Upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
+			// TODO: Проверять наличие такого хантера по slug и url
 			return true // Пропускаем любой запрос
 		},
 	}
@@ -55,6 +56,7 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 
 		connection.WriteMessage(websocket.TextMessage, message)
 
+		// TODO: Сделать отправку сообщений всей группе одинаковые сообщения а не каждому разные
 		go messageHandler(message)
 	}
 }

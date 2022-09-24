@@ -49,3 +49,11 @@
   args:
     chdir: '{{ BASE_PATH }}'
   tags: configuration
+
+- name: Build frontend
+  shell: |
+    npm install
+    npx mix
+  args:
+    chdir: '{{ BASE_PATH }}frontend'
+  tags: configuration
