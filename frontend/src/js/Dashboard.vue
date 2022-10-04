@@ -223,25 +223,25 @@ export default {
         let i = 0;
         timerMessage = setInterval(function () {
           i++
-          socket.send("Меня зовут Джон "+i);
+          socket.send("Frontend "+i);
         }, 500)
       };
 
-      socket.onclose = event => {
-        clearInterval(timerMessage)
-
-        if (event.wasClean) {
-          console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
-        } else {
-          let timerid = setInterval(() => {
-            console.log('onclose! new reconnect')
-            this.connect(timerid)
-          }, 2000)
-        }
-      };
+      // socket.onclose = event => {
+      //   clearInterval(timerMessage)
+      //
+      //   if (event.wasClean) {
+      //     console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+      //   } else {
+      //     let timerid = setInterval(() => {
+      //       console.log('onclose! new reconnect')
+      //       this.connect(timerid)
+      //     }, 2000)
+      //   }
+      // };
 
       socket.onmessage = function(event) {
-        console.log(event.data)
+        console.log('Server: '+event.data)
       };
 
       socket.onerror = event => {

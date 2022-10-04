@@ -9,11 +9,17 @@ import (
 	"strings"
 )
 
+type SocketMessage struct {
+	Channel string
+	Message string
+}
+
 type SocketController struct {
 	BaseController
 	DatabaseController
-	Upgrader websocket.Upgrader
-	Clients  map[string]map[*websocket.Conn]bool
+	Upgrader     websocket.Upgrader
+	Clients      map[string]map[*websocket.Conn]bool
+	MessageChain chan SocketMessage
 }
 
 func (c *SocketController) Init(db *sqlx.DB) {
@@ -24,6 +30,9 @@ func (c *SocketController) Init(db *sqlx.DB) {
 			return true // Пропускаем любой запрос
 		},
 	}
+	c.MessageChain = make(chan SocketMessage, 10)
+
+	go c.WorkerMessage()
 }
 
 func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
@@ -54,10 +63,24 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 			break // Выходим из цикла, если клиент пытается закрыть соединение или связь с клиентом прервана
 		}
 
-		connection.WriteMessage(websocket.TextMessage, message)
-
-		// TODO: Сделать отправку сообщений всей группе одинаковые сообщения а не каждому разные
 		go messageHandler(message)
+	}
+}
+
+func (c *SocketController) WorkerMessage() {
+	for message := range c.MessageChain {
+		if len(c.Clients[message.Channel]) == 0 {
+			continue
+		}
+		log.Println("[DEBUG] Sending message...")
+
+		for connection, _ := range c.Clients[message.Channel] {
+			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
+			if err != nil {
+				log.Printf("[ERR] Failed send message: %s", err)
+				return
+			}
+		}
 	}
 }
 
