@@ -78,7 +78,7 @@ func (c *SocketController) WorkerMessage() {
 			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
 			if err != nil {
 				log.Printf("[ERR] Failed send message: %s", err)
-				return
+				continue
 			}
 		}
 	}
