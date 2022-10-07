@@ -214,17 +214,18 @@ export default {
     connect: function (timer) {
       let socket = new WebSocket("ws://" + document.location.host + "/ws/");
 
-      let timerMessage
+      // let timerMessage
       socket.onopen = e => {
-        if (timer) {
-          clearInterval(timer)
-        }
-
-        let i = 0;
-        timerMessage = setInterval(function () {
-          i++
-          socket.send("Frontend "+i);
-        }, 500)
+        console.log("connection has been opened")
+        // if (timer) {
+        //   clearInterval(timer)
+        // }
+        //
+        // let i = 0;
+        // timerMessage = setInterval(function () {
+        //   i++
+        //   socket.send("Frontend "+i);
+        // }, 500)
       };
 
       // socket.onclose = event => {
