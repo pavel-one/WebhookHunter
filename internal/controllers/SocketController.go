@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 )
 
 type SocketMessage struct {
@@ -17,9 +19,10 @@ type SocketMessage struct {
 type SocketController struct {
 	BaseController
 	DatabaseController
-	Upgrader     websocket.Upgrader
-	Clients      map[string]map[*websocket.Conn]bool
-	MessageChain chan SocketMessage
+	Upgrader    websocket.Upgrader
+	Clients     map[string][]*websocket.Conn
+	MessageChan chan SocketMessage
+	mu          *sync.Mutex
 }
 
 func (c *SocketController) Init(db *sqlx.DB) {
@@ -30,9 +33,8 @@ func (c *SocketController) Init(db *sqlx.DB) {
 			return true // Пропускаем любой запрос
 		},
 	}
-	c.MessageChain = make(chan SocketMessage, 10)
-
-	go c.WorkerMessage()
+	c.MessageChan = make(chan SocketMessage, 10)
+	c.mu = &sync.Mutex{}
 }
 
 func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
@@ -41,49 +43,93 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 		log.Printf("[ERROR] Error upgrading %v", err)
 		return
 	}
-	defer connection.Close()
+
 	domain := strings.Split(r.Host, ".")[0]
 
 	if c.Clients == nil {
-		m := make(map[string]map[*websocket.Conn]bool)
-		m[domain] = map[*websocket.Conn]bool{
-			connection: true,
-		}
+		m := make(map[string][]*websocket.Conn)
+
+		var connections []*websocket.Conn
+		finConn := append(connections, connection)
+
+		m[domain] = finConn
 		c.Clients = m
 	} else {
-		c.Clients[domain][connection] = true
+		n := append(c.Clients[domain], connection)
+		c.Clients[domain] = n
 	}
 
-	defer delete(c.Clients[domain], connection)
-
-	for {
-		mt, message, err := connection.ReadMessage()
-
-		if err != nil || mt == websocket.CloseMessage {
-			break // Выходим из цикла, если клиент пытается закрыть соединение или связь с клиентом прервана
-		}
-
-		go messageHandler(message)
+	if len(c.Clients[domain]) == 1 {
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		go c.listener(domain, wg)
+		wg.Wait()
 	}
+
+	//if len(c.Clients[domain]) == 1 {
+	//	i := 0
+	//	for {
+	//		if len(c.Clients[domain]) != 0 {
+	//			c.MessageChan <- SocketMessage{
+	//				Channel: domain,
+	//				Message: fmt.Sprintf("Send test message # %d", i),
+	//			}
+	//
+	//			go c.WorkerMessage()
+	//		} else {
+	//			log.Println("finished controller for this domain: ", domain)
+	//			break
+	//		}
+	//		time.Sleep(time.Second * 2)
+	//		i++
+	//	}
+	//}
+
 }
 
 func (c *SocketController) WorkerMessage() {
-	for message := range c.MessageChain {
-		if len(c.Clients[message.Channel]) == 0 {
-			continue
-		}
+	for message := range c.MessageChan {
+		log.Printf("%v connections on %v", len(c.Clients[message.Channel]), message.Channel)
 		log.Println("[DEBUG] Sending message...")
 
-		for connection, _ := range c.Clients[message.Channel] {
+		for index, connection := range c.Clients[message.Channel] {
+			c.mu.Lock()
 			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
+			c.mu.Unlock()
+
 			if err != nil {
+				c.mu.Lock()
+				c.Clients[message.Channel][index] = c.Clients[message.Channel][len(c.Clients[message.Channel])-1]
+				c.mu.Unlock()
+				c.mu.Lock()
+				c.Clients[message.Channel] = c.Clients[message.Channel][:len(c.Clients[message.Channel])-1]
+				c.mu.Unlock()
+
+				connection.Close()
 				log.Printf("[ERR] Failed send message: %s", err)
+				log.Printf("[WARN] connection %v closed", index+1)
 				continue
 			}
 		}
 	}
 }
 
-func messageHandler(message []byte) {
-	fmt.Println("[DEBUG]: " + string(message))
+func (c *SocketController) listener(domain string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	i := 0
+	for {
+		if len(c.Clients[domain]) != 0 {
+			c.MessageChan <- SocketMessage{
+				Channel: domain,
+				Message: fmt.Sprintf("Send test message # %d", i),
+			}
+
+			go c.WorkerMessage()
+		} else {
+			log.Println("finished controller for this domain: ", domain)
+			break
+		}
+		time.Sleep(time.Second * 2)
+		i++
+	}
 }
