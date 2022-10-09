@@ -31,7 +31,6 @@ func (c *SocketController) Init(db *sqlx.DB) {
 	c.DB = db
 	c.Upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
-			// TODO: Проверять наличие такого хантера по slug и url
 			return c.checkSlug(r)
 		},
 	}
@@ -67,26 +66,6 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 		go c.listener(domain, wg)
 		wg.Wait()
 	}
-
-	//if len(c.Clients[domain]) == 1 {
-	//	i := 0
-	//	for {
-	//		if len(c.Clients[domain]) != 0 {
-	//			c.MessageChan <- SocketMessage{
-	//				Channel: domain,
-	//				Message: fmt.Sprintf("Send test message # %d", i),
-	//			}
-	//
-	//			go c.WorkerMessage()
-	//		} else {
-	//			log.Println("finished controller for this domain: ", domain)
-	//			break
-	//		}
-	//		time.Sleep(time.Second * 2)
-	//		i++
-	//	}
-	//}
-
 }
 
 func (c *SocketController) WorkerMessage() {
@@ -102,8 +81,6 @@ func (c *SocketController) WorkerMessage() {
 			if err != nil {
 				c.mu.Lock()
 				c.Clients[message.Channel][index] = c.Clients[message.Channel][len(c.Clients[message.Channel])-1]
-				c.mu.Unlock()
-				c.mu.Lock()
 				c.Clients[message.Channel] = c.Clients[message.Channel][:len(c.Clients[message.Channel])-1]
 				c.mu.Unlock()
 

@@ -35,27 +35,6 @@ func main() {
 	go app.ApiRun("80", fatalChan)
 	go socket.ApiRun("8080", fatalChan)
 
-	//TODO: This example send group message, drop it
-	//go func() {
-	//	i := 0
-	//
-	//	for {
-	//		if len(c.Clients[domain]) != 0 && connection == c.Clients[domain][0] {
-	//			c.MessageChan <- SocketMessage{
-	//				Channel: domain,
-	//				Message: fmt.Sprintf("Send test message # %d", i),
-	//			}
-	//
-	//			go c.WorkerMessage()
-	//		} else if len(c.Clients[domain]) == 0 {
-	//			log.Println("finished controller for this domain: ", domain)
-	//			break
-	//		}
-	//		time.Sleep(time.Second * 2)
-	//		i++
-	//	}
-	//}()
-
 	err := <-fatalChan
 	if err != nil {
 		app.Close()
