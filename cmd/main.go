@@ -32,7 +32,8 @@ func main() {
 
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
-	socket.GET(":channel", socketController.Connect)
+	socket.GET("/", socketController.Connect)
+	socket.GET("/{channel:[a-Z]+}", socketController.Connect)
 
 	go app.ApiRun("80", fatalChan)
 	go socket.ApiRun("8080", fatalChan)
