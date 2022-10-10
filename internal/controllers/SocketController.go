@@ -14,11 +14,14 @@ type SocketMessage struct {
 	Message string
 }
 
+type Connections map[*websocket.Conn]bool
+type Hub map[string]Connections
+
 type SocketController struct {
 	BaseController
 	DatabaseController
 	Upgrader     websocket.Upgrader
-	Clients      map[string]map[*websocket.Conn]bool
+	Hub          Hub
 	MessageChain chan SocketMessage
 }
 
@@ -44,37 +47,58 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 	defer connection.Close()
 	domain := strings.Split(r.Host, ".")[0]
 
-	if c.Clients == nil {
-		m := make(map[string]map[*websocket.Conn]bool)
-		m[domain] = map[*websocket.Conn]bool{
-			connection: true,
+	if c.Hub == nil {
+		c.Hub = Hub{
+			domain: Connections{
+				connection: true,
+			},
 		}
-		c.Clients = m
 	} else {
-		c.Clients[domain][connection] = true
+		c.Hub[domain][connection] = true
 	}
 
-	defer delete(c.Clients[domain], connection)
+	defer c.closeConnection(connection, domain)
+	//
+	//if c.Clients == nil {
+	//	m := make(map[string]map[*websocket.Conn]bool)
+	//	m[domain] = map[*websocket.Conn]bool{
+	//		connection: true,
+	//	}
+	//	c.Clients = m
+	//} else {
+	//	c.Clients[domain][connection] = true
+	//}
+	//
+	//defer delete(c.Clients[domain], connection)
 
 	for {
 		mt, message, err := connection.ReadMessage()
 
 		if err != nil || mt == websocket.CloseMessage {
-			break // Выходим из цикла, если клиент пытается закрыть соединение или связь с клиентом прервана
+			return // Выходим из функции, если клиент пытается закрыть соединение или связь с клиентом прервана
 		}
 
-		go messageHandler(message)
+		messageHandler(message)
 	}
+}
+
+func (c *SocketController) closeConnection(conn *websocket.Conn, domain string) {
+	if len(c.Hub[domain]) == 1 {
+		c.Hub[domain] = nil
+		return
+	}
+
+	delete(c.Hub[domain], conn)
 }
 
 func (c *SocketController) WorkerMessage() {
 	for message := range c.MessageChain {
-		if len(c.Clients[message.Channel]) == 0 {
+		if len(c.Hub[message.Channel]) == 0 {
 			continue
 		}
 		log.Println("[DEBUG] Sending message...")
 
-		for connection, _ := range c.Clients[message.Channel] {
+		for connection, _ := range c.Hub[message.Channel] {
 			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
 			if err != nil {
 				log.Printf("[ERR] Failed send message: %s", err)
