@@ -26,6 +26,7 @@ type SocketController struct {
 }
 
 func (c *SocketController) Init(db *sqlx.DB) {
+
 	c.DB = db
 	c.Upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -38,7 +39,7 @@ func (c *SocketController) Init(db *sqlx.DB) {
 	go c.WorkerMessage()
 }
 
-func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
+func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	connection, err := c.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("[ERROR] Error upgrading %v", err)
@@ -47,48 +48,58 @@ func (c *SocketController) Test(w http.ResponseWriter, r *http.Request) {
 	defer connection.Close()
 	domain := strings.Split(r.Host, ".")[0]
 
-	if c.Hub == nil {
-		c.Hub = Hub{
-			domain: Connections{
-				connection: true,
-			},
-		}
-	} else {
-		c.Hub[domain][connection] = true
-	}
-
+	c.handleConnection(domain, connection)
 	defer c.closeConnection(connection, domain)
-	//
-	//if c.Clients == nil {
-	//	m := make(map[string]map[*websocket.Conn]bool)
-	//	m[domain] = map[*websocket.Conn]bool{
-	//		connection: true,
-	//	}
-	//	c.Clients = m
-	//} else {
-	//	c.Clients[domain][connection] = true
-	//}
-	//
-	//defer delete(c.Clients[domain], connection)
 
 	for {
 		mt, message, err := connection.ReadMessage()
 
-		if err != nil || mt == websocket.CloseMessage {
-			return // Выходим из функции, если клиент пытается закрыть соединение или связь с клиентом прервана
+		if err != nil {
+			return // exit
 		}
 
-		messageHandler(message)
+		switch mt {
+		case websocket.PingMessage, websocket.PongMessage:
+			continue
+		case websocket.TextMessage:
+			messageHandler(message)
+		default:
+			return // exit
+		}
+
 	}
 }
 
-func (c *SocketController) closeConnection(conn *websocket.Conn, domain string) {
-	if len(c.Hub[domain]) == 1 {
-		c.Hub[domain] = nil
+func (c *SocketController) handleConnection(domain string, conn *websocket.Conn) {
+	// if hub not exists
+	if c.Hub == nil {
+		c.Hub = Hub{
+			domain: Connections{
+				conn: true,
+			},
+		}
 		return
 	}
 
+	// if domain not exists
+	if len(c.Hub[domain]) == 0 {
+		c.Hub[domain] = Connections{
+			conn: true,
+		}
+		return
+	}
+
+	// simple add new connection
+	c.Hub[domain][conn] = true
+}
+
+func (c *SocketController) closeConnection(conn *websocket.Conn, domain string) {
 	delete(c.Hub[domain], conn)
+
+	if len(c.Hub[domain]) == 0 {
+		delete(c.Hub, domain)
+		return
+	}
 }
 
 func (c *SocketController) WorkerMessage() {
