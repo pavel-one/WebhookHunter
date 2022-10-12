@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -30,8 +32,7 @@ func (c *SocketController) Init(db *sqlx.DB) {
 	c.DB = db
 	c.Upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
-			// TODO: Проверять наличие такого хантера по slug и url
-			return true // Пропускаем любой запрос
+			return c.checkSlug(r)
 		},
 	}
 	c.MessageChain = make(chan SocketMessage, 10)
@@ -121,4 +122,21 @@ func (c *SocketController) WorkerMessage() {
 
 func messageHandler(message []byte) {
 	fmt.Println("[DEBUG]: " + string(message))
+}
+
+func (c *SocketController) checkSlug(r *http.Request) bool {
+	domain := strings.Split(r.Host, ".")
+
+	if domain[1]+"."+domain[2] != os.Getenv("DOMAIN") {
+		return false
+	}
+
+	hunter := new(models.Hunter)
+	hunter.FindBySlug(c.DB, domain[0])
+
+	if hunter.Id == "" {
+		return false
+	}
+
+	return true
 }
