@@ -72,23 +72,40 @@ func (c *SocketController) WorkerMessage() {
 	for message := range c.MessageChan {
 		log.Printf("%v connections on %v", len(c.Clients[message.Channel]), message.Channel)
 		log.Println("[DEBUG] Sending message...")
-
-		for index, connection := range c.Clients[message.Channel] {
+		var err error
+		var index int
+		var connection *websocket.Conn
+		for index, connection = range c.Clients[message.Channel] {
 			c.mu.Lock()
-			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
+			err = connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
 			c.mu.Unlock()
 
-			if err != nil {
-				c.mu.Lock()
-				c.Clients[message.Channel][index] = c.Clients[message.Channel][len(c.Clients[message.Channel])-1]
-				c.Clients[message.Channel] = c.Clients[message.Channel][:len(c.Clients[message.Channel])-1]
-				c.mu.Unlock()
+			//if err != nil {
+			//	c.mu.Lock()
+			//	c.Clients[message.Channel][index] = c.Clients[message.Channel][len(c.Clients[message.Channel])-1]
+			//	c.Clients[message.Channel] = c.Clients[message.Channel][:len(c.Clients[message.Channel])-1]
+			//	c.mu.Unlock()
+			//
+			//	c.mu.Lock()
+			//	connection.Close()
+			//	c.mu.Unlock()
+			//	log.Printf("[ERR] Failed send message: %s", err)
+			//	log.Printf("[WARN] connection %v closed", index+1)
+			//	continue
+			//}
+		}
+		if err != nil {
+			c.mu.Lock()
+			c.Clients[message.Channel][index] = c.Clients[message.Channel][len(c.Clients[message.Channel])-1]
+			c.Clients[message.Channel] = c.Clients[message.Channel][:len(c.Clients[message.Channel])-1]
+			c.mu.Unlock()
 
-				connection.Close()
-				log.Printf("[ERR] Failed send message: %s", err)
-				log.Printf("[WARN] connection %v closed", index+1)
-				continue
-			}
+			c.mu.Lock()
+			connection.Close()
+			c.mu.Unlock()
+			log.Printf("[ERR] Failed send message: %s", err)
+			log.Printf("[WARN] connection %v closed", index+1)
+			continue
 		}
 	}
 }
@@ -104,6 +121,7 @@ func (c *SocketController) listener(domain string, wg *sync.WaitGroup) {
 			}
 
 			go c.WorkerMessage()
+
 		} else {
 			log.Println("finished controller for this domain: ", domain)
 			break
