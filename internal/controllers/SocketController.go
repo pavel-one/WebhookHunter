@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
@@ -12,12 +13,14 @@ import (
 )
 
 type SocketMessage struct {
+	Domain  string
 	Channel string
 	Message string
 }
 
 type Connections map[*websocket.Conn]bool
-type Hub map[string]Connections
+type Channels map[string]Connections
+type Hub map[string]Channels
 
 type SocketController struct {
 	BaseController
@@ -49,8 +52,37 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	defer connection.Close()
 	domain := strings.Split(r.Host, ".")[0]
 
-	c.handleConnection(domain, connection)
-	defer c.closeConnection(connection, domain)
+	var channel string
+	var channelLstn models.Channel
+
+	if mux.Vars(r)["channel"] == "" {
+		channel = "/"
+		fmt.Println(channel)
+	} else {
+		channel = mux.Vars(r)["channel"]
+	}
+	var hunter models.Hunter
+	hunter.FindBySlug(c.DB, domain)
+
+	if hunter.Id == "" {
+		log.Printf("[ERROR] cannot find hunter with %v slug", domain)
+		return
+	}
+
+	channelLstn.Path = r.Host + channel
+	channelLstn.FindByPath(c.DB, channelLstn.Path)
+
+	if channelLstn.Id == 0 {
+		channelLstn.HunterId = hunter.Id
+		err = channelLstn.Create(c.DB)
+		if err != nil {
+			log.Printf("[ERROR] cannot create channel %v", err)
+			return
+		}
+	}
+
+	c.handleConnection(domain, channel, connection)
+	defer c.closeConnection(connection, domain, channel)
 
 	for {
 		mt, message, err := connection.ReadMessage()
@@ -71,12 +103,14 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *SocketController) handleConnection(domain string, conn *websocket.Conn) {
+func (c *SocketController) handleConnection(domain string, chName string, conn *websocket.Conn) {
 	// if hub not exists
 	if c.Hub == nil {
 		c.Hub = Hub{
-			domain: Connections{
-				conn: true,
+			domain: Channels{
+				chName: Connections{
+					conn: true,
+				},
 			},
 		}
 		return
@@ -84,18 +118,19 @@ func (c *SocketController) handleConnection(domain string, conn *websocket.Conn)
 
 	// if domain not exists
 	if len(c.Hub[domain]) == 0 {
-		c.Hub[domain] = Connections{
-			conn: true,
+		c.Hub[domain] = Channels{
+			chName: Connections{
+				conn: true,
+			},
 		}
 		return
 	}
-
 	// simple add new connection
-	c.Hub[domain][conn] = true
+	c.Hub[domain][chName][conn] = true
 }
 
-func (c *SocketController) closeConnection(conn *websocket.Conn, domain string) {
-	delete(c.Hub[domain], conn)
+func (c *SocketController) closeConnection(conn *websocket.Conn, domain string, chName string) {
+	delete(c.Hub[domain][chName], conn)
 
 	if len(c.Hub[domain]) == 0 {
 		delete(c.Hub, domain)
@@ -105,12 +140,12 @@ func (c *SocketController) closeConnection(conn *websocket.Conn, domain string) 
 
 func (c *SocketController) WorkerMessage() {
 	for message := range c.MessageChain {
-		if len(c.Hub[message.Channel]) == 0 {
+		if len(c.Hub[message.Domain][message.Channel]) == 0 {
 			continue
 		}
 		log.Println("[DEBUG] Sending message...")
 
-		for connection, _ := range c.Hub[message.Channel] {
+		for connection, _ := range c.Hub[message.Domain][message.Channel] {
 			err := connection.WriteMessage(websocket.TextMessage, []byte(message.Message))
 			if err != nil {
 				log.Printf("[ERR] Failed send message: %s", err)
@@ -125,11 +160,11 @@ func messageHandler(message []byte) {
 }
 
 func (c *SocketController) checkSlug(r *http.Request) bool {
-	domain := strings.Split(r.Host, ".")
-
-	if domain[1]+"."+domain[2] != os.Getenv("DOMAIN") {
+	if r.Host == os.Getenv("DOMAIN") {
 		return false
 	}
+
+	domain := strings.Split(r.Host, ".")
 
 	hunter := new(models.Hunter)
 	hunter.FindBySlug(c.DB, domain[0])

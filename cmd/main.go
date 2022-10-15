@@ -44,7 +44,8 @@ func main() {
 
 		for {
 			socketController.MessageChain <- controllers.SocketMessage{
-				Channel: "test",
+				Domain:  "evu",
+				Channel: "/",
 				Message: fmt.Sprintf("Send test message # %d", i),
 			}
 			time.Sleep(time.Second * 2)
