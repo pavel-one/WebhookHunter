@@ -1,15 +1,16 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"github.com/jmoiron/sqlx"
 )
 
 type Channel struct {
-	Id       int    `db:"id"`
-	HunterId string `db:"hunter_id"`
-	Path     string `db:"path"`
-	Redirect string `db:"redirect"`
+	Id       uint           `db:"id"`
+	HunterId string         `db:"hunter_id"`
+	Path     string         `db:"path"`
+	Redirect sql.NullString `db:"redirect"`
 }
 
 func (c *Channel) Create(db *sqlx.DB) error {

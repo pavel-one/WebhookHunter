@@ -44,6 +44,10 @@ func (c *SocketController) Init(db *sqlx.DB) {
 }
 
 func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
+	var channel string
+	var chModel models.Channel
+	var hunter models.Hunter
+
 	connection, err := c.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("[ERROR] Error upgrading %v", err)
@@ -52,37 +56,28 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	defer connection.Close()
 	domain := strings.Split(r.Host, ".")[0]
 
-	var channel string
-	var channelLstn models.Channel
+	channel = mux.Vars(r)["channel"]
 
-	if mux.Vars(r)["channel"] == "" {
+	if channel == "" {
 		channel = "/"
-		fmt.Println(channel)
-	} else {
-		channel = mux.Vars(r)["channel"]
 	}
-	var hunter models.Hunter
-	hunter.FindBySlug(c.DB, domain)
 
-	if hunter.Id == "" {
-		log.Printf("[ERROR] cannot find hunter with %v slug", domain)
+	err = hunter.FindBySlug(c.DB, domain)
+
+	if hunter.Id == "" || err != nil {
+		log.Printf("[WARNING] cannot find hunter with %v slug", domain)
 		return
 	}
 
-	channelLstn.Path = r.Host + channel
-	channelLstn.FindByPath(c.DB, channelLstn.Path)
+	err = chModel.FindByPath(c.DB, channel)
 
-	if channelLstn.Id == 0 {
-		channelLstn.HunterId = hunter.Id
-		err = channelLstn.Create(c.DB)
-		if err != nil {
-			log.Printf("[ERROR] cannot create channel %v", err)
-			return
-		}
+	if chModel.Id == 0 || err != nil {
+		log.Printf("[WARNING] try connect channel %s not found", channel)
+		return
 	}
 
 	c.handleConnection(domain, channel, connection)
-	defer c.closeConnection(connection, domain, channel)
+	defer c.dropConnection(connection, domain, channel)
 
 	for {
 		mt, message, err := connection.ReadMessage()
@@ -129,7 +124,7 @@ func (c *SocketController) handleConnection(domain string, chName string, conn *
 	c.Hub[domain][chName][conn] = true
 }
 
-func (c *SocketController) closeConnection(conn *websocket.Conn, domain string, chName string) {
+func (c *SocketController) dropConnection(conn *websocket.Conn, domain string, chName string) {
 	delete(c.Hub[domain][chName], conn)
 
 	if len(c.Hub[domain]) == 0 {

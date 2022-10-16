@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/helpers"
+	"log"
 	"time"
 )
 
@@ -43,11 +44,22 @@ func (h *Hunter) Create(db *sqlx.DB) error {
 
 	h.Slug = s
 
-	_, err := db.NamedExec(`INSERT INTO hunters (id, ip, slug, created_at) 
-								VALUES (:id, :ip, :slug, :created_at)`, h)
-
+	tx := db.MustBegin()
+	tx.MustExec(`
+WITH hunter as (
+    INSERT INTO hunters (id, ip, created_at, slug)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id
+)
+INSERT INTO channels (hunter_id, path)
+VALUES (
+        (select hunter.id from hunter),
+        '/') 
+`, h.Id, h.Ip, h.CreatedAt, h.Slug)
+	err := tx.Commit()
 	if err != nil {
-		return errors.New("failed to create hunter")
+		log.Printf("[ERROR] %s", err)
+		return errors.New("failed create hunter")
 	}
 
 	if err := h.Find(db, h.Id); err != nil {

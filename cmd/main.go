@@ -44,7 +44,7 @@ func main() {
 
 		for {
 			socketController.MessageChain <- controllers.SocketMessage{
-				Domain:  "evu",
+				Domain:  "test",
 				Channel: "/",
 				Message: fmt.Sprintf("Send test message # %d", i),
 			}
