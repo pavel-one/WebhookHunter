@@ -45,7 +45,6 @@ func (c *SocketController) Init(db *sqlx.DB) {
 
 func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	var channel string
-	var chModel models.Channel
 	var hunter models.Hunter
 
 	connection, err := c.Upgrader.Upgrade(w, r, nil)
@@ -69,7 +68,7 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = chModel.FindByPath(c.DB, channel)
+	err, chModel := hunter.FindChannelByPath(c.DB, channel)
 
 	if chModel.Id == 0 || err != nil {
 		log.Printf("[WARNING] try connect channel %s not found", channel)

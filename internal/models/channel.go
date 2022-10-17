@@ -7,10 +7,10 @@ import (
 )
 
 type Channel struct {
-	Id       uint           `db:"id"`
-	HunterId string         `db:"hunter_id"`
-	Path     string         `db:"path"`
-	Redirect sql.NullString `db:"redirect"`
+	Id       uint            `db:"id"`
+	HunterId string          `db:"hunter_id"`
+	Path     string          `db:"path"`
+	Redirect *sql.NullString `db:"redirect"`
 }
 
 func (c *Channel) Create(db *sqlx.DB) error {
@@ -20,6 +20,11 @@ func (c *Channel) Create(db *sqlx.DB) error {
 
 	if err != nil {
 		return errors.New("failed to create channel " + err.Error())
+	}
+
+	// update model
+	if err := db.Get(c, "SELECT * FROM channels ORDER BY id DESC LIMIT 1"); err != nil {
+		return err
 	}
 
 	return nil
@@ -32,8 +37,4 @@ func (c *Channel) Find(db *sqlx.DB, id int64) error {
 func (c *Channel) Delete(db *sqlx.DB) error {
 	_, err := db.NamedExec("DELETE FROM channels WHERE id=$1", c.Id)
 	return err
-}
-
-func (c *Channel) FindByPath(db *sqlx.DB, path string) error {
-	return db.Get(c, "SELECT * FROM channels WHERE path=$1 LIMIT 1", path)
 }
