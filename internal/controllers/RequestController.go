@@ -36,7 +36,7 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hunter.Id == "" {
-		c.Error(w, http.StatusBadRequest, errors.New("hunter not found"))
+		c.Error(w, http.StatusNotFound, errors.New("hunter not found"))
 		return
 	}
 
