@@ -20,25 +20,7 @@ type App struct {
 }
 
 func (a *App) Init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("[FATAL] Not loading environment: %v", err)
-	}
-
-	db, err := sqlx.Connect("postgres", fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-	))
-
-	if err != nil {
-		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
-	}
-
-	a.DB = db
+	a.DB = ConnectToDb()
 	a.Router = mux.NewRouter()
 }
 
@@ -77,4 +59,26 @@ func (a *App) GET(path string, method func(w http.ResponseWriter, r *http.Reques
 
 func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, method).Methods("POST")
+}
+
+func ConnectToDb() *sqlx.DB {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("[FATAL] Not loading environment: %v", err)
+	}
+
+	db, err := sqlx.Connect("postgres", fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	))
+
+	if err != nil {
+		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
+	}
+
+	return db
 }

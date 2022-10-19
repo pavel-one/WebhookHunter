@@ -23,7 +23,7 @@ func (c *Channel) Create(db *sqlx.DB) error {
 	}
 
 	// update model
-	if err := db.Get(c, "SELECT * FROM channels ORDER BY id DESC LIMIT 1"); err != nil {
+	if err = db.Get(c, "SELECT * FROM channels ORDER BY id DESC LIMIT 1"); err != nil {
 		return err
 	}
 
