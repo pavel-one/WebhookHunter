@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "sh bash/port.sh && CGO_ENABLED=0 go build -gcflags='all=-N -l' -buildvcs=false -o ./tmp/main ./cmd"
+cmd = "sh bash/port.sh && CGO_ENABLED=0 go build -gcflags='all=-N -l' -buildvcs=false -o ./tmp/main ./cmd/main.go && CGO_ENABLED=0 go build -gcflags='all=-N -l' -buildvcs=false -o ./tmp/admin ./cmd/admin.go"
 bin = "tmp/main"
 full_bin = "dlv exec --accept-multiclient --headless --continue --listen :2345 --api-version 2 ./tmp/main"
 include_ext = ["go", "tpl", "tmpl", "html", "env"]
