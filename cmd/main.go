@@ -30,6 +30,7 @@ func main() {
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
 	app.GET("/", hunterController.Index)
+	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
 	app.POST("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
 
