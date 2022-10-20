@@ -8,8 +8,8 @@ import (
 
 type Admin struct {
 	Id        uint      `db:"id"`
-	Login     string    `db:"login"`
-	Password  string    `db:"password"`
+	Login     string    `json:"login" db:"login"`
+	Password  string    `json:"password" db:"password"`
 	CreatedAt time.Time `db:"created_at"`
 }
 

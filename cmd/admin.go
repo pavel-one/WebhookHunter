@@ -28,7 +28,7 @@ func main() {
 		_, err = fmt.Scan(&admin.Login, &admin.Password)
 
 		if err != nil {
-			cute.Check("scan failed "+err.Error(), err)
+			cute.Check("input scan failed", err)
 		}
 
 		if err = createAdmin(db, admin); err != nil {
