@@ -27,11 +27,15 @@ func main() {
 	requestController := new(controllers.RequestController)
 	requestController.Init(app.DB)
 
+	adminController := new(controllers.AdminController)
+	adminController.Init(app.DB)
+
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
 	app.GET("/", hunterController.Index)
 	app.POST("/check/", hunterController.Check)
 	app.POST("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
+	app.POST("/admin/login/", adminController.Login)
 
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
