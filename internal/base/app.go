@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"log"
 	"net/http"
 	"os"
@@ -59,6 +60,14 @@ func (a *App) GET(path string, method func(w http.ResponseWriter, r *http.Reques
 
 func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, method).Methods("POST")
+}
+
+func (a *App) GETAdminRouteWithMiddleware(suffix string, method func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method))).Methods("GET")
+}
+
+func (a *App) POSTAdminRouteWithMiddleware(suffix string, method func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method))).Methods("POST")
 }
 
 func ConnectToDb() *sqlx.DB {

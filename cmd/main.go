@@ -38,6 +38,9 @@ func main() {
 	app.POST("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
 	app.POST("/admin/login/", adminController.Login)
 
+	//here must be admin routes
+	app.GETAdminRouteWithMiddleware("/test/", adminController.Test)
+
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
 	socket.GET("/", socketController.Connect)
