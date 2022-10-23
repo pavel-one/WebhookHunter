@@ -63,11 +63,11 @@ func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Reque
 }
 
 func (a *App) GETAdminRouteWithMiddleware(suffix string, method func(w http.ResponseWriter, r *http.Request)) {
-	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method))).Methods("GET")
+	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method), a.DB)).Methods("GET")
 }
 
 func (a *App) POSTAdminRouteWithMiddleware(suffix string, method func(w http.ResponseWriter, r *http.Request)) {
-	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method))).Methods("POST")
+	a.Router.Handle("/admin"+suffix, controllers.CheckToken(http.HandlerFunc(method), a.DB)).Methods("POST")
 }
 
 func ConnectToDb() *sqlx.DB {

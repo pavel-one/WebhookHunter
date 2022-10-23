@@ -1,7 +1,9 @@
 package controllers
 
 import (
-	"github.com/pavel-one/WebhookWatcher/internal/helpers"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"log"
 	"net/http"
 )
@@ -20,26 +22,38 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func CheckToken(next http.Handler) http.Handler {
+func CheckToken(next http.Handler, db *sqlx.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authToken, ok := helpers.CheckAuthHeader(r)
+		authToken, ok := CheckAuthHeader(r)
 
 		if !ok {
-			helpers.WriteErrMessage(w, "auth token is missing")
+			WriteErrMessage(w, "auth token is missing")
+			return
+		}
+
+		tokenModel := new(models.AuthToken)
+		tokenModel.GetByToken(db, authToken)
+
+		if tokenModel.Id == 0 {
+			WriteErrMessage(w, "token not exists")
 			return
 		}
 
 		token, err := ParseToken(authToken)
 
 		if err != nil {
-			helpers.WriteErrMessage(w, "failed parsing token")
+			if err.(*jwt.ValidationError).Errors == 16 {
+				tokenModel.Delete(db)
+			}
+
+			WriteErrMessage(w, err.Error())
 			return
 		}
 
 		_, ok = token.Claims.(*CustomClaims)
 
 		if !ok || !token.Valid {
-			helpers.WriteErrMessage(w, "invalid token")
+			WriteErrMessage(w, "invalid token")
 			return
 		}
 

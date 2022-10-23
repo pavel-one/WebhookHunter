@@ -3,10 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -99,23 +97,8 @@ func (c *AdminController) Test(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func ParseToken(authToken string) (*jwt.Token, error) {
-	token, err := jwt.ParseWithClaims(authToken, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		key := []byte(os.Getenv("JWT_KEY"))
-
-		return key, nil
-	})
-
-	return token, err
-}
-
 func (c *AdminController) getClaims(r *http.Request) (*CustomClaims, error) {
-	authToken, ok := helpers.CheckAuthHeader(r)
+	authToken, ok := CheckAuthHeader(r)
 
 	if !ok {
 		return nil, errors.New("auth token is missing")
