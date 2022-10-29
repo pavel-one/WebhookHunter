@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	WebhookHunter "github.com/pavel-one/WebhookWatcher"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"log"
@@ -29,11 +30,18 @@ func main() {
 
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
+
+	//load static files
+	handler := WebhookHunter.AssetHandler("/web/", "frontend")
+	app.Router.PathPrefix("/web/").Handler(handler)
+
+	//api
 	app.GET("/", hunterController.Index)
 	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
 	app.POST("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
 
+	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
 	socket.GET("/", socketController.Connect)

@@ -3,14 +3,11 @@ server {
     listen  [::]:80;
     server_name *.${DOMAIN} ${DOMAIN};
 
-    root /var/www/frontend;
-    index index.html;
-
     location / {
         #gzip_static on;
         #expires max;
         #add_header Cache-Control public;
-        try_files $uri $uri/ =404;
+        proxy_pass http://app:80/web/;
     }
 
     location /ws/ {
