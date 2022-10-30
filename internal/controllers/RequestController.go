@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -51,7 +53,28 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Create request
+	headers, err := json.Marshal(r.Header)
+	if err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("error read headers"))
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+		return
+	}
+
+	var RequestModel models.RequestModel
+	RequestModel.ChannelID = chModel.Id
+	RequestModel.Request = json.RawMessage(body)
+	RequestModel.Headers = json.RawMessage(headers)
+
+	err = RequestModel.Create(c.DB)
+	if err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+		return
+	}
 
 	c.JSON(w, http.StatusCreated, map[string]any{
 		"status": "created",
