@@ -23,6 +23,8 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+const hunterErr = "hunter not found"
+
 func (c *AdminController) Init(db *sqlx.DB) {
 	c.DB = db
 }

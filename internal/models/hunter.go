@@ -108,3 +108,22 @@ func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (error, Channel)
 
 	return nil, ch
 }
+
+func (h *Hunter) Update(db *sqlx.DB) error {
+	_, err := db.NamedExec("UPDATE hunters SET ip=:ip, slug=:slug WHERE id=:id", h)
+
+	if err != nil {
+		return err
+	}
+
+	if err = h.Find(db, h.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Hunter) Delete(db *sqlx.DB, id string) error {
+	_, err := db.Exec("DELETE FROM hunters WHERE id=$1", id)
+	return err
+}

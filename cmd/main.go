@@ -39,7 +39,11 @@ func main() {
 	app.POST("/admin/login/", adminController.Login)
 
 	//here must be admin routes
-	app.GETAdminRouteWithMiddleware("/test/", adminController.Test)
+	app.AdminRouteWithMiddleware("/hunter/test/", "GET", adminController.Test)
+	app.AdminRouteWithMiddleware("/hunter/create/", "POST", adminController.HunterCreate)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/", "GET", adminController.HunterGet)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/update/", "PATCH", adminController.HunterUpdate)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/delete/", "DELETE", adminController.HunterDelete)
 
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
