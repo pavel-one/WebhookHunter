@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
@@ -25,6 +26,8 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	domain := strings.Split(r.Host, ".")[0]
 	var channel string
 	var hunter models.Hunter
+	var RequestModel models.RequestModel
+	var body []byte
 
 	channel = mux.Vars(r)["channel"]
 	if channel == "" {
@@ -59,24 +62,64 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+	typeRequest := strings.Split(r.Header.Get("Content-Type"), ";")[0]
+	fmt.Println(typeRequest)
+
+	switch typeRequest {
+	case "application/json":
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+			return
+		}
+
+		if !json.Valid(body) {
+			c.Error(w, http.StatusBadGateway, errors.New("json invalid"))
+			return
+		}
+
+		break
+	case "text/plain", "text/html", "application/xml":
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+			return
+		}
+
+		body, err = json.Marshal(map[string]string{
+			"type": "simple",
+			"text": string(body),
+		})
+		break
+	case "multipart/form-data":
+		if err := r.ParseMultipartForm(512 << 20); err != nil {
+			c.Error(w, http.StatusBadGateway, errors.New("error form data"))
+			return
+		}
+		body, err = json.Marshal(r.MultipartForm)
+		if err != nil {
+			c.Error(w, http.StatusBadGateway, errors.New("error form data"))
+			return
+		}
+		break
+	case "": //not content type
+
+		break
+	default: //other content type
+		c.Error(w, http.StatusBadGateway, errors.New(fmt.Sprintf("not support content-type: %s", typeRequest)))
 		return
 	}
 
-	var RequestModel models.RequestModel
 	RequestModel.ChannelID = chModel.Id
-	RequestModel.Request = json.RawMessage(body)
-	RequestModel.Headers = json.RawMessage(headers)
+	RequestModel.Request = body
+	RequestModel.Headers = headers
 
-	err = RequestModel.Create(c.DB)
-	if err != nil {
-		c.Error(w, http.StatusBadGateway, errors.New("error read body"))
+	if err := RequestModel.Create(c.DB); err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("error save request"))
 		return
 	}
 
 	c.JSON(w, http.StatusCreated, map[string]any{
-		"status": "created",
+		"status": http.StatusText(http.StatusCreated),
 	})
 }

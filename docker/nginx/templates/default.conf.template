@@ -3,6 +3,8 @@ server {
     listen  [::]:80;
     server_name *.${DOMAIN} ${DOMAIN};
 
+    client_max_body_size 512M;
+
     location / {
         #gzip_static on;
         #expires max;
