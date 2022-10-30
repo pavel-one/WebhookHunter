@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	Root "github.com/pavel-one/WebhookWatcher"
 	"log"
 	"net/http"
 	"os"
@@ -77,4 +78,9 @@ func (a *App) GET(path string, method func(w http.ResponseWriter, r *http.Reques
 
 func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, method).Methods("POST")
+}
+
+func (a *App) Static(prefix string, root string) {
+	handler := Root.AssetHandler(prefix, root)
+	a.Router.PathPrefix(prefix).Handler(handler)
 }
