@@ -77,9 +77,9 @@ func (h *Hunter) FindBySlug(db *sqlx.DB, slug string) error {
 	return db.Get(h, "SELECT * FROM hunters WHERE slug=$1 LIMIT 1", slug)
 }
 
-func (h *Hunter) CreateChannel(db *sqlx.DB, channel string) (error, Channel) {
+func (h *Hunter) CreateChannel(db *sqlx.DB, channel string) (Channel, error) {
 	if h.Id == "" {
-		return errors.New("hunter not exists"), Channel{}
+		return Channel{}, errors.New("hunter not exists")
 	}
 
 	ch := Channel{
@@ -88,25 +88,25 @@ func (h *Hunter) CreateChannel(db *sqlx.DB, channel string) (error, Channel) {
 	}
 
 	if err := ch.Create(db); err != nil {
-		return err, Channel{}
+		return Channel{}, err
 	}
 
-	return nil, ch
+	return ch, nil
 }
 
-func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (error, Channel) {
+func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (Channel, error) {
 	var ch Channel
 
 	if h.Id == "" {
-		return errors.New("hunter not exists"), ch
+		return ch, errors.New("hunter not exists")
 	}
 
 	err := db.Get(&ch, "SELECT * FROM channels WHERE hunter_id=$1 and path=$2", h.Id, channel)
 	if err != nil {
-		return err, ch
+		return ch, err
 	}
 
-	return nil, ch
+	return ch, nil
 }
 
 func (h *Hunter) Update(db *sqlx.DB) error {

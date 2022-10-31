@@ -45,10 +45,10 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err, chModel := hunter.FindChannelByPath(c.DB, channel)
+	chModel, err := hunter.FindChannelByPath(c.DB, channel)
 
 	if chModel.Id == 0 {
-		err, chModel = hunter.CreateChannel(c.DB, channel)
+		chModel, err = hunter.CreateChannel(c.DB, channel)
 	}
 
 	if err != nil {

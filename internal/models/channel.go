@@ -7,10 +7,10 @@ import (
 )
 
 type Channel struct {
-	Id       uint            `db:"id"`
-	HunterId string          `db:"hunter_id"`
-	Path     string          `db:"path"`
-	Redirect *sql.NullString `db:"redirect"`
+	Id       uint            `json:"id" db:"id"`
+	HunterId string          `json:"hunter_id" db:"hunter_id"`
+	Path     string          `json:"path" db:"path"`
+	Redirect *sql.NullString `json:"redirect" db:"redirect"`
 }
 
 func (c *Channel) Create(db *sqlx.DB) error {
@@ -30,11 +30,25 @@ func (c *Channel) Create(db *sqlx.DB) error {
 	return nil
 }
 
-func (c *Channel) Find(db *sqlx.DB, id int64) error {
+func (c *Channel) Find(db *sqlx.DB, id uint) error {
 	return db.Get(c, "SELECT * FROM channels WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
 }
 
-func (c *Channel) Delete(db *sqlx.DB) error {
-	_, err := db.NamedExec("DELETE FROM channels WHERE id=$1", c.Id)
+func (c *Channel) Update(db *sqlx.DB) error {
+	_, err := db.NamedExec("UPDATE channels SET path=:path, redirect=:redirect WHERE id=:id", c)
+
+	if err != nil {
+		return err
+	}
+
+	if err = c.Find(db, c.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Channel) Delete(db *sqlx.DB, id uint) error {
+	_, err := db.Exec("DELETE FROM channels WHERE id=$1", id)
 	return err
 }
