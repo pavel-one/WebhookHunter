@@ -19,7 +19,8 @@ func (c *BaseController) Error(w http.ResponseWriter, code int, err error) {
 	w.WriteHeader(code)
 
 	err = json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": err.Error(),
+		"status": http.StatusText(code),
+		"error":  err.Error(),
 	})
 
 	if err != nil {

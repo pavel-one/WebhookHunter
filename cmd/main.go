@@ -34,6 +34,11 @@ func main() {
 
 	app.Router.Use(middlewars.LoggingMiddleware)
 	app.Router.NotFoundHandler = middlewars.Handler404
+
+	//load static files
+	app.Static("/web/", "frontend")
+
+	//api
 	app.GET("/", hunterController.Index)
 	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
@@ -50,6 +55,11 @@ func main() {
 	app.AdminRouteWithMiddleware("/hunter/{slug}/update/", "PATCH", adminHunterController.Update)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/delete/", "DELETE", adminHunterController.Delete)
 
+	socket.Router.Use(middlewars.LoggingMiddleware)
+	socket.Router.NotFoundHandler = middlewars.Handler404
+	app.GET("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
+
+	//websocket
 	socket.Router.Use(middlewars.LoggingMiddleware)
 	socket.Router.NotFoundHandler = middlewars.Handler404
 	socket.GET("/", socketController.Connect)
