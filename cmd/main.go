@@ -37,8 +37,8 @@ func main() {
 	app.GET("/", hunterController.Index)
 	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
-	app.POST("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
-	app.GET("/request/{channel:[a-zA-Z0-9]+}", requestController.NewRequest)
+	app.GET("/channels/", hunterController.GetChannels)
+	app.Prefix("/request/", requestController.NewRequest)
 
 	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)

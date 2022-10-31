@@ -108,3 +108,18 @@ func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (error, Channel)
 
 	return nil, ch
 }
+
+func (h *Hunter) Channels(db *sqlx.DB) ([]Channel, error) {
+	var channels []Channel
+
+	if h.Id == "" {
+		return nil, errors.New("model not exists")
+	}
+
+	err := db.Select(&channels, `SELECT * FROM channels WHERE hunter_id=$1`, h.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return channels, nil
+}

@@ -7,10 +7,10 @@ import (
 )
 
 type Channel struct {
-	Id       uint            `db:"id"`
-	HunterId string          `db:"hunter_id"`
-	Path     string          `db:"path"`
-	Redirect *sql.NullString `db:"redirect"`
+	Id       uint            `db:"id" json:"id"`
+	HunterId string          `db:"hunter_id" json:"hunter_id"`
+	Path     string          `db:"path" json:"path"`
+	Redirect *sql.NullString `db:"redirect" json:"-"`
 }
 
 func (c *Channel) Create(db *sqlx.DB) error {
