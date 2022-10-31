@@ -1,8 +1,9 @@
-package controllers
+package middlewars
 
 import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/adminApi"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"log"
 	"net/http"
@@ -24,10 +25,10 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 func CheckToken(next http.Handler, db *sqlx.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authToken, ok := CheckAuthHeader(r)
+		authToken, ok := adminApi.CheckAuthHeader(r)
 
 		if !ok {
-			WriteErrMessage(w, "auth token is missing")
+			adminApi.WriteErrMessage(w, "auth token is missing")
 			return
 		}
 
@@ -35,25 +36,25 @@ func CheckToken(next http.Handler, db *sqlx.DB) http.Handler {
 		tokenModel.GetByToken(db, authToken)
 
 		if tokenModel.Id == 0 {
-			WriteErrMessage(w, "token not exists")
+			adminApi.WriteErrMessage(w, "token not exists")
 			return
 		}
 
-		token, err := ParseToken(authToken)
+		token, err := adminApi.ParseToken(authToken)
 
 		if err != nil {
 			if err.(*jwt.ValidationError).Errors == 16 {
 				tokenModel.Delete(db)
 			}
 
-			WriteErrMessage(w, err.Error())
+			adminApi.WriteErrMessage(w, err.Error())
 			return
 		}
 
-		_, ok = token.Claims.(*CustomClaims)
+		_, ok = token.Claims.(*adminApi.CustomClaims)
 
 		if !ok || !token.Valid {
-			WriteErrMessage(w, "invalid token")
+			adminApi.WriteErrMessage(w, "invalid token")
 			return
 		}
 

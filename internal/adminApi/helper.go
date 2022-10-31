@@ -1,7 +1,8 @@
-package controllers
+package adminApi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
@@ -45,4 +46,26 @@ func WriteErrMessage(w http.ResponseWriter, errorMsg string) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"error": errorMsg,
 	})
+}
+
+func getClaims(r *http.Request) (*CustomClaims, error) {
+	authToken, ok := CheckAuthHeader(r)
+
+	if !ok {
+		return nil, errors.New("auth token is missing")
+	}
+
+	token, err := ParseToken(authToken)
+
+	if err != nil {
+		return nil, errors.New("error parsing token")
+	}
+
+	claims, ok := token.Claims.(*CustomClaims)
+
+	if !ok {
+		return nil, errors.New("failed to get claims")
+	}
+
+	return claims, nil
 }

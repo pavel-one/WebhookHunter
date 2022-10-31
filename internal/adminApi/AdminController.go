@@ -1,10 +1,11 @@
-package controllers
+package adminApi
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -13,14 +14,8 @@ import (
 )
 
 type AdminController struct {
-	BaseController
-	DatabaseController
-}
-
-type CustomClaims struct {
-	AdminId uint   `json:"id"`
-	Login   string `json:"login"`
-	jwt.RegisteredClaims
+	controllers.BaseController
+	controllers.DatabaseController
 }
 
 const hunterErr = "hunter not found"
@@ -86,7 +81,7 @@ func (c *AdminController) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AdminController) Test(w http.ResponseWriter, r *http.Request) {
-	claims, err := c.getClaims(r)
+	claims, err := getClaims(r)
 
 	if err != nil {
 		c.Error(w, http.StatusUnauthorized, err)
@@ -97,26 +92,4 @@ func (c *AdminController) Test(w http.ResponseWriter, r *http.Request) {
 		"id":    claims.AdminId,
 		"login": claims.Login,
 	})
-}
-
-func (c *AdminController) getClaims(r *http.Request) (*CustomClaims, error) {
-	authToken, ok := CheckAuthHeader(r)
-
-	if !ok {
-		return nil, errors.New("auth token is missing")
-	}
-
-	token, err := ParseToken(authToken)
-
-	if err != nil {
-		return nil, errors.New("error parsing token")
-	}
-
-	claims, ok := token.Claims.(*CustomClaims)
-
-	if !ok {
-		return nil, errors.New("failed to get claims")
-	}
-
-	return claims, nil
 }

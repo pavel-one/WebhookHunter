@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/pavel-one/WebhookWatcher/internal/adminApi"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
+	"github.com/pavel-one/WebhookWatcher/internal/middlewars"
 	"log"
 	"os"
 	"time"
@@ -27,11 +29,11 @@ func main() {
 	requestController := new(controllers.RequestController)
 	requestController.Init(app.DB)
 
-	adminController := new(controllers.AdminController)
+	adminController := new(adminApi.AdminController)
 	adminController.Init(app.DB)
 
-	app.Router.Use(controllers.LoggingMiddleware)
-	app.Router.NotFoundHandler = controllers.Handler404
+	app.Router.Use(middlewars.LoggingMiddleware)
+	app.Router.NotFoundHandler = middlewars.Handler404
 	app.GET("/", hunterController.Index)
 	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
@@ -39,14 +41,17 @@ func main() {
 	app.POST("/admin/login/", adminController.Login)
 
 	//here must be admin routes
-	app.AdminRouteWithMiddleware("/hunter/test/", "GET", adminController.Test)
-	app.AdminRouteWithMiddleware("/hunter/create/", "POST", adminController.HunterCreate)
-	app.AdminRouteWithMiddleware("/hunter/{slug}/", "GET", adminController.HunterGet)
-	app.AdminRouteWithMiddleware("/hunter/{slug}/update/", "PATCH", adminController.HunterUpdate)
-	app.AdminRouteWithMiddleware("/hunter/{slug}/delete/", "DELETE", adminController.HunterDelete)
+	app.AdminRouteWithMiddleware("/test/", "GET", adminController.Test)
+	////hunter
+	adminHunterController := new(adminApi.AdminHunterController)
+	adminHunterController.Init(app.DB)
+	app.AdminRouteWithMiddleware("/hunter/create/", "POST", adminHunterController.Create)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/", "GET", adminHunterController.Get)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/update/", "PATCH", adminHunterController.Update)
+	app.AdminRouteWithMiddleware("/hunter/{slug}/delete/", "DELETE", adminHunterController.Delete)
 
-	socket.Router.Use(controllers.LoggingMiddleware)
-	socket.Router.NotFoundHandler = controllers.Handler404
+	socket.Router.Use(middlewars.LoggingMiddleware)
+	socket.Router.NotFoundHandler = middlewars.Handler404
 	socket.GET("/", socketController.Connect)
 	socket.GET("/{channel:[a-zA-Z0-9]+}", socketController.Connect)
 

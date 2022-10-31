@@ -1,15 +1,26 @@
-package controllers
+package adminApi
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/resources"
 	"net/http"
 )
 
-func (c *AdminController) HunterCreate(w http.ResponseWriter, r *http.Request) {
+type AdminHunterController struct {
+	controllers.BaseController
+	controllers.DatabaseController
+}
+
+func (c *AdminHunterController) Init(db *sqlx.DB) {
+	c.DB = db
+}
+
+func (c *AdminHunterController) Create(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	response := new(resources.HunterResponse)
 
@@ -23,7 +34,7 @@ func (c *AdminController) HunterCreate(w http.ResponseWriter, r *http.Request) {
 	c.JSON(w, http.StatusCreated, response)
 }
 
-func (c *AdminController) HunterGet(w http.ResponseWriter, r *http.Request) {
+func (c *AdminHunterController) Get(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
 	hunter.FindBySlug(c.DB, vars["slug"])
@@ -36,7 +47,7 @@ func (c *AdminController) HunterGet(w http.ResponseWriter, r *http.Request) {
 	c.JSON(w, http.StatusOK, hunter)
 }
 
-func (c *AdminController) HunterUpdate(w http.ResponseWriter, r *http.Request) {
+func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
 	hunter.FindBySlug(c.DB, vars["slug"])
@@ -79,7 +90,7 @@ func (c *AdminController) HunterUpdate(w http.ResponseWriter, r *http.Request) {
 	c.JSON(w, http.StatusOK, hunter)
 }
 
-func (c *AdminController) HunterDelete(w http.ResponseWriter, r *http.Request) {
+func (c *AdminHunterController) Delete(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
 	hunter.FindBySlug(c.DB, vars["slug"])
@@ -94,5 +105,5 @@ func (c *AdminController) HunterDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.JSON(w, http.StatusOK, map[string]any{"message": "hunter deleted successfully", "status": http.StatusOK})
+	c.JSON(w, http.StatusOK, map[string]any{"message": "hunter deleted successfully", "status": "OK"})
 }
