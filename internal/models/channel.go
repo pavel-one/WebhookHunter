@@ -34,6 +34,15 @@ func (c *Channel) Find(db *sqlx.DB, id uint) error {
 	return db.Get(c, "SELECT * FROM channels WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
 }
 
+func (c *Channel) All(db *sqlx.DB) ([]Channel, error) {
+	var channels []Channel
+	if err := db.Select(&channels, "SELECT * FROM channels"); err != nil {
+		return nil, err
+	}
+
+	return channels, nil
+}
+
 func (c *Channel) Update(db *sqlx.DB) error {
 	_, err := db.NamedExec("UPDATE channels SET path=:path, redirect=:redirect WHERE id=:id", c)
 

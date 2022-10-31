@@ -73,6 +73,16 @@ func (h *Hunter) Find(db *sqlx.DB, id string) error {
 	return db.Get(h, "SELECT * FROM hunters WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
 }
 
+func (h *Hunter) All(db *sqlx.DB) ([]Hunter, error) {
+	var hunters []Hunter
+	// TODO: maybe in future add cache here?
+	if err := db.Select(&hunters, "SELECT * FROM hunters"); err != nil {
+		return nil, err
+	}
+
+	return hunters, nil
+}
+
 func (h *Hunter) FindBySlug(db *sqlx.DB, slug string) error {
 	return db.Get(h, "SELECT * FROM hunters WHERE slug=$1 LIMIT 1", slug)
 }
@@ -107,6 +117,15 @@ func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (Channel, error)
 	}
 
 	return ch, nil
+}
+
+func (h *Hunter) AllChannelsByHunter(db *sqlx.DB) ([]Channel, error) {
+	var channels []Channel
+	if err := db.Select(&channels, "SELECT * FROM channels WHERE hunter_id=$1", h.Id); err != nil {
+		return nil, err
+	}
+
+	return channels, nil
 }
 
 func (h *Hunter) Update(db *sqlx.DB) error {
