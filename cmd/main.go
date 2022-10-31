@@ -52,8 +52,18 @@ func main() {
 	adminHunterController.Init(app.DB)
 	app.AdminRouteWithMiddleware("/hunter/create/", "POST", adminHunterController.Create)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/", "GET", adminHunterController.Get)
+	app.AdminRouteWithMiddleware("/hunters/", "GET", adminHunterController.GetAll)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/update/", "PATCH", adminHunterController.Update)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/delete/", "DELETE", adminHunterController.Delete)
+	////channel
+	adminChannelController := new(adminApi.AdminChannelController)
+	adminChannelController.Init(app.DB)
+	app.AdminRouteWithMiddleware("/channel/{slug}/create", "POST", adminChannelController.Create)
+	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "GET", adminChannelController.Get)
+	app.AdminRouteWithMiddleware("/channels/{slug}/", "GET", adminChannelController.GetAllByHunter)
+	app.AdminRouteWithMiddleware("/channels/", "GET", adminChannelController.GetAll)
+	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "PATCH", adminChannelController.Update)
+	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "DELETE", adminChannelController.Delete)
 
 	socket.Router.Use(middlewars.LoggingMiddleware)
 	socket.Router.NotFoundHandler = middlewars.Handler404

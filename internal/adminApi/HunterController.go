@@ -47,6 +47,16 @@ func (c *AdminHunterController) Get(w http.ResponseWriter, r *http.Request) {
 	c.JSON(w, http.StatusOK, hunter)
 }
 
+func (c *AdminHunterController) GetAll(w http.ResponseWriter, r *http.Request) {
+	hunters, err := new(models.Hunter).All(c.DB)
+	if err != nil {
+		c.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(w, http.StatusOK, hunters)
+}
+
 func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
