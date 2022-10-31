@@ -63,7 +63,6 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	typeRequest := strings.Split(r.Header.Get("Content-Type"), ";")[0]
-	fmt.Println(typeRequest)
 
 	switch typeRequest {
 	case "application/json":
@@ -103,16 +102,24 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		}
 		break
 	case "": //not content type
-
+		body = []byte{123, 125}
 		break
 	default: //other content type
 		c.Error(w, http.StatusBadGateway, errors.New(fmt.Sprintf("not support content-type: %s", typeRequest)))
 		return
 	}
 
+	q, err := json.Marshal(r.URL.Query())
+	if err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("failed parse query"))
+		return
+	}
+
 	RequestModel.ChannelID = chModel.Id
 	RequestModel.Request = body
 	RequestModel.Headers = headers
+	RequestModel.Path = r.URL.Path
+	RequestModel.Query = q
 
 	if err := RequestModel.Create(c.DB); err != nil {
 		c.Error(w, http.StatusBadGateway, errors.New("error save request"))

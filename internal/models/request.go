@@ -12,6 +12,8 @@ type RequestModel struct {
 	ChannelID uint            `json:"channel_id" db:"channel_id"`
 	Request   json.RawMessage `json:"request" db:"request"`
 	Headers   json.RawMessage `json:"headers" db:"headers"`
+	Query     json.RawMessage `json:"query" db:"query"`
+	Path      string          `json:"path" db:"path"`
 	CreatedAt time.Time       `json:"created_at" db:"created_at"`
 }
 
@@ -26,8 +28,8 @@ func (m *RequestModel) Create(db *sqlx.DB) error {
 		m.Headers = helpers.TrimJson(m.Headers)
 	}
 
-	_, err := db.NamedExec(`INSERT INTO requests (request, created_at, channel_id, headers) 
-						VALUES (:request, :created_at, :channel_id, :headers)`, m)
+	_, err := db.NamedExec(`INSERT INTO requests (request, created_at, channel_id, headers, path, query) 
+						VALUES (:request, :created_at, :channel_id, :headers, :path, :query)`, m)
 	if err != nil {
 		return err
 	}
