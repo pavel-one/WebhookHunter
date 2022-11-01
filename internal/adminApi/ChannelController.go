@@ -86,7 +86,7 @@ func (c *AdminChannelController) GetAllByHunter(w http.ResponseWriter, r *http.R
 		c.Error(w, http.StatusNotFound, err)
 	}
 
-	channels, err := hunter.AllChannelsByHunter(c.DB)
+	channels, err := hunter.Channels(c.DB)
 
 	if err != nil {
 		c.Error(w, http.StatusBadRequest, err)
@@ -169,5 +169,5 @@ func (c *AdminChannelController) Delete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	c.JSON(w, code, map[string]any{"status": "OK", "message": "hunter deleted successfully"})
+	c.JSON(w, code, map[string]any{"status": "OK", "message": "channel deleted successfully"})
 }

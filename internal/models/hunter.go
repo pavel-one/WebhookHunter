@@ -119,15 +119,6 @@ func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (Channel, error)
 	return ch, nil
 }
 
-func (h *Hunter) AllChannelsByHunter(db *sqlx.DB) ([]Channel, error) {
-	var channels []Channel
-	if err := db.Select(&channels, "SELECT * FROM channels WHERE hunter_id=$1", h.Id); err != nil {
-		return nil, err
-	}
-
-	return channels, nil
-}
-
 func (h *Hunter) Update(db *sqlx.DB) error {
 	_, err := db.NamedExec("UPDATE hunters SET ip=:ip, slug=:slug WHERE id=:id", h)
 
@@ -145,4 +136,19 @@ func (h *Hunter) Update(db *sqlx.DB) error {
 func (h *Hunter) Delete(db *sqlx.DB, id string) error {
 	_, err := db.Exec("DELETE FROM hunters WHERE id=$1", id)
 	return err
+}
+
+func (h *Hunter) Channels(db *sqlx.DB) ([]Channel, error) {
+	var channels []Channel
+
+	if h.Id == "" {
+		return nil, errors.New("model not exists")
+	}
+
+	err := db.Select(&channels, `SELECT * FROM channels WHERE hunter_id=$1`, h.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return channels, nil
 }

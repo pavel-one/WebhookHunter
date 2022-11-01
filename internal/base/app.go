@@ -63,6 +63,10 @@ func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Reque
 	a.Router.HandleFunc(path, method).Methods("POST")
 }
 
+func (a *App) Prefix(prefix string, f http.HandlerFunc) {
+	a.Router.PathPrefix(prefix).HandlerFunc(f)
+}
+
 func (a *App) Static(prefix string, root string) {
 	handler := Root.AssetHandler(prefix, root)
 	a.Router.PathPrefix(prefix).Handler(handler)

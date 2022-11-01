@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"log"
 	"net/http"
 )
@@ -43,4 +44,8 @@ func (c *BaseController) JSON(w http.ResponseWriter, code int, response interfac
 	}
 
 	log.Printf("[INFO] JSON response: %v", response)
+}
+
+func (c *BaseController) NotFound(w http.ResponseWriter, r *http.Request) {
+	helpers.Handler404(w, r)
 }

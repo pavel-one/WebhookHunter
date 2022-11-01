@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
@@ -60,6 +61,35 @@ func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
 		"status": "OK",
 	})
 
+}
+
+func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
+	var hunter models.Hunter
+	domainArr := strings.Split(r.Host, ".")
+	if len(domainArr) < 3 {
+		c.NotFound(w, r)
+		return
+	}
+
+	domain := domainArr[0]
+
+	if err := hunter.FindBySlug(c.DB, domain); err != nil {
+		c.Error(w, http.StatusNotFound, errors.New("not found"))
+		return
+	}
+
+	if hunter.Id == "" {
+		c.NotFound(w, r)
+		return
+	}
+
+	channels, err := hunter.Channels(c.DB)
+	if err != nil {
+		c.NotFound(w, r)
+		return
+	}
+
+	c.JSON(w, http.StatusOK, channels)
 }
 
 func (c *HunterController) Index(w http.ResponseWriter, r *http.Request) {
