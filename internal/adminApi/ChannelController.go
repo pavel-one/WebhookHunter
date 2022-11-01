@@ -6,14 +6,12 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"net/http"
 )
 
 type AdminChannelController struct {
-	controllers.BaseController
-	controllers.DatabaseController
+	SubController
 }
 
 func (c *AdminChannelController) Init(db *sqlx.DB) {
@@ -135,7 +133,7 @@ func (c *AdminChannelController) Update(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if requestChannel.Path == "" {
+	if requestChannel.Path == "" && requestChannel.Redirect == "" {
 		c.Error(w, http.StatusBadRequest, errors.New("field path is required"))
 		return
 	}
@@ -172,29 +170,4 @@ func (c *AdminChannelController) Delete(w http.ResponseWriter, r *http.Request) 
 	}
 
 	c.JSON(w, code, map[string]any{"status": "OK", "message": "hunter deleted successfully"})
-}
-
-func (c *AdminChannelController) checkHunter(slug string) (*models.Hunter, error) {
-	hunter := new(models.Hunter)
-	hunter.FindBySlug(c.DB, slug)
-
-	if hunter.Id == "" {
-		return nil, errors.New(hunterErr)
-	}
-
-	return hunter, nil
-}
-
-func (c *AdminChannelController) checkChannel(hunter *models.Hunter, path string) (models.Channel, int, error) {
-	channel, err := hunter.FindChannelByPath(c.DB, "/"+path)
-
-	if err != nil {
-		return channel, http.StatusNotFound, err
-	}
-
-	if channel.Id == 0 {
-		return channel, http.StatusNotFound, errors.New("channel not found")
-	}
-
-	return channel, http.StatusOK, nil
 }

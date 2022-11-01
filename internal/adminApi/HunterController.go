@@ -5,15 +5,13 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/resources"
 	"net/http"
 )
 
 type AdminHunterController struct {
-	controllers.BaseController
-	controllers.DatabaseController
+	SubController
 }
 
 func (c *AdminHunterController) Init(db *sqlx.DB) {
@@ -35,12 +33,11 @@ func (c *AdminHunterController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AdminHunterController) Get(w http.ResponseWriter, r *http.Request) {
-	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
-	hunter.FindBySlug(c.DB, vars["slug"])
+	hunter, err := c.checkHunter(vars["slug"])
 
-	if hunter.Slug == "" {
-		c.Error(w, http.StatusBadRequest, errors.New(hunterErr))
+	if err != nil {
+		c.Error(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -58,12 +55,11 @@ func (c *AdminHunterController) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
-	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
-	hunter.FindBySlug(c.DB, vars["slug"])
+	hunter, err := c.checkHunter(vars["slug"])
 
-	if hunter.Id == "" {
-		c.Error(w, http.StatusBadRequest, errors.New(hunterErr))
+	if err != nil {
+		c.Error(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -72,7 +68,7 @@ func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
 		Slug string `json:"slug"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&requestHunter)
+	err = json.NewDecoder(r.Body).Decode(&requestHunter)
 
 	if err != nil {
 		c.Error(w, http.StatusBadRequest, err)
@@ -80,7 +76,7 @@ func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if requestHunter.Ip == "" && requestHunter.Slug == "" {
-		c.Error(w, http.StatusBadGateway, errors.New("request body is required"))
+		c.Error(w, http.StatusBadRequest, errors.New("request body is required"))
 		return
 	}
 
@@ -101,16 +97,15 @@ func (c *AdminHunterController) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AdminHunterController) Delete(w http.ResponseWriter, r *http.Request) {
-	hunter := new(models.Hunter)
 	vars := mux.Vars(r)
-	hunter.FindBySlug(c.DB, vars["slug"])
+	hunter, err := c.checkHunter(vars["slug"])
 
-	if hunter.Slug == "" || hunter.Id == "" {
-		c.Error(w, http.StatusBadRequest, errors.New(hunterErr))
+	if err != nil {
+		c.Error(w, http.StatusNotFound, err)
 		return
 	}
 
-	if err := hunter.Delete(c.DB, hunter.Id); err != nil {
+	if err = hunter.Delete(c.DB, hunter.Id); err != nil {
 		c.Error(w, http.StatusBadRequest, err)
 		return
 	}
