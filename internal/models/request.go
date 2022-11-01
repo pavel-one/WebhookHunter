@@ -41,3 +41,44 @@ func (m *RequestModel) Create(db *sqlx.DB) error {
 
 	return nil
 }
+
+func (m *RequestModel) Find(db *sqlx.DB, id uint) error {
+	return db.Get(m, "SELECT * FROM requests WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
+}
+
+func (m *RequestModel) All(db *sqlx.DB) ([]RequestModel, error) {
+	var requests []RequestModel
+	if err := db.Select(&requests, "SELECT * FROM requests"); err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+}
+
+func (m *RequestModel) AllByChannelId(db *sqlx.DB, channelId uint) ([]RequestModel, error) {
+	var requests []RequestModel
+	if err := db.Select(&requests, "SELECT * FROM requests WHERE channel_id=$1", channelId); err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+}
+
+func (m *RequestModel) Update(db *sqlx.DB) error {
+	_, err := db.NamedExec("UPDATE requests SET request=:request, headers=:headers, path=:path, query=:query WHERE id=:id", m)
+
+	if err != nil {
+		return err
+	}
+
+	if err = m.Find(db, m.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RequestModel) Delete(db *sqlx.DB, id uint) error {
+	_, err := db.Exec("DELETE FROM requests WHERE id=$1", id)
+	return err
+}
