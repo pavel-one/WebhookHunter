@@ -1,10 +1,11 @@
-package adminApi
+package AdminControllers
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/WebhookWatcher/internal/adminApi/Auth"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"golang.org/x/crypto/bcrypt"
@@ -50,10 +51,10 @@ func (c *AdminController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := CustomClaims{
-		admin.Id,
-		admin.Login,
-		jwt.RegisteredClaims{
+	claims := Auth.CustomClaims{
+		AdminId: admin.Id,
+		Login:   admin.Login,
+		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 	}
@@ -81,7 +82,7 @@ func (c *AdminController) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AdminController) Test(w http.ResponseWriter, r *http.Request) {
-	claims, err := getClaims(r)
+	claims, err := Auth.GetClaims(r)
 
 	if err != nil {
 		c.Error(w, http.StatusUnauthorized, err)

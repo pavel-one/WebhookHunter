@@ -1,4 +1,4 @@
-package adminApi
+package AdminControllers
 
 import (
 	"encoding/json"

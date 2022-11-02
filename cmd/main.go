@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/pavel-one/WebhookWatcher/internal/adminApi"
+	"github.com/pavel-one/WebhookWatcher/internal/adminApi/Controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"github.com/pavel-one/WebhookWatcher/internal/middlewars"
@@ -29,7 +29,7 @@ func main() {
 	requestController := new(controllers.RequestController)
 	requestController.Init(app.DB)
 
-	adminController := new(adminApi.AdminController)
+	adminController := new(AdminControllers.AdminController)
 	adminController.Init(app.DB)
 
 	app.Router.Use(middlewars.LoggingMiddleware)
@@ -49,7 +49,7 @@ func main() {
 	//here must be admin routes
 	app.AdminRouteWithMiddleware("/test/", "GET", adminController.Test)
 	////hunter
-	adminHunterController := new(adminApi.AdminHunterController)
+	adminHunterController := new(AdminControllers.AdminHunterController)
 	adminHunterController.Init(app.DB)
 	app.AdminRouteWithMiddleware("/hunter/", "POST", adminHunterController.Create)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/", "GET", adminHunterController.Get)
@@ -57,7 +57,7 @@ func main() {
 	app.AdminRouteWithMiddleware("/hunter/{slug}/", "PATCH", adminHunterController.Update)
 	app.AdminRouteWithMiddleware("/hunter/{slug}/", "DELETE", adminHunterController.Delete)
 	////channel
-	adminChannelController := new(adminApi.AdminChannelController)
+	adminChannelController := new(AdminControllers.AdminChannelController)
 	adminChannelController.Init(app.DB)
 	app.AdminRouteWithMiddleware("/channel/{slug}/", "POST", adminChannelController.Create)
 	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "GET", adminChannelController.Get)
@@ -66,7 +66,7 @@ func main() {
 	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "PATCH", adminChannelController.Update)
 	app.AdminRouteWithMiddleware("/channel/{slug}/{channel}/", "DELETE", adminChannelController.Delete)
 	////request
-	adminRequestController := new(adminApi.AdminRequestController)
+	adminRequestController := new(AdminControllers.AdminRequestController)
 	adminRequestController.Init(app.DB)
 	app.AdminRouteWithMiddleware("/request/{slug}/{channel}/", "POST", adminRequestController.Create)
 	app.AdminRouteWithMiddleware("/request/{id}/", "GET", adminRequestController.Get)

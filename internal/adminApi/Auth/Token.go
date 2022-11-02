@@ -1,4 +1,4 @@
-package adminApi
+package Auth
 
 import (
 	"encoding/json"
@@ -9,6 +9,12 @@ import (
 	"os"
 	"strings"
 )
+
+type CustomClaims struct {
+	AdminId uint   `json:"id"`
+	Login   string `json:"login"`
+	jwt.RegisteredClaims
+}
 
 //check auth header if it exists
 
@@ -48,7 +54,7 @@ func WriteErrMessage(w http.ResponseWriter, errorMsg string) {
 	})
 }
 
-func getClaims(r *http.Request) (*CustomClaims, error) {
+func GetClaims(r *http.Request) (*CustomClaims, error) {
 	authToken, ok := CheckAuthHeader(r)
 
 	if !ok {
