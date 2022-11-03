@@ -8,7 +8,6 @@ import (
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/zakaria-chahboun/cute"
 	"golang.org/x/crypto/bcrypt"
-	"os"
 )
 
 func main() {
@@ -24,8 +23,8 @@ func main() {
 	switch input {
 	case "create":
 		cute.SetTitleColor(cute.BrightBlue)
-		cute.Println("Enter the login then password")
-		_, err = fmt.Scan(&admin.Login, &admin.Password)
+		cute.Printf("Enter the login then password", "")
+		_, err = fmt.Scanln(&admin.Login, &admin.Password)
 
 		if err != nil {
 			cute.Check("input scan failed", err)
@@ -39,15 +38,15 @@ func main() {
 		cute.Println("Created successfully")
 	case "delete":
 		cute.SetTitleColor(cute.BrightBlue)
-		cute.Println("Enter the login then password")
-		_, err = fmt.Scan(&admin.Login, &admin.Password)
+		cute.Printf("Enter the login then password", "")
+		_, err = fmt.Scanln(&admin.Login, &admin.Password)
 
 		if err != nil {
 			cute.Check("scan failed", err)
 		}
 
-		if !checkAdmin(db, admin) {
-			os.Exit(2)
+		if err = checkAdmin(db, admin); err != nil {
+			cute.Check("ERROR", err)
 		}
 
 		if err = admin.Delete(db); err != nil {
@@ -57,8 +56,7 @@ func main() {
 		cute.SetTitleColor(cute.BrightGreen)
 		cute.Println("Deleted successfully")
 	default:
-		cute.Println("unknown command")
-		os.Exit(2)
+		cute.Check("unknown command", errors.New("use create or delete"))
 	}
 }
 
@@ -74,22 +72,19 @@ func createAdmin(db *sqlx.DB, admin *models.Admin) error {
 	return admin.Create(db)
 }
 
-func checkAdmin(db *sqlx.DB, admin *models.Admin) bool {
+func checkAdmin(db *sqlx.DB, admin *models.Admin) error {
 	p := admin.Password
 	admin.GetByLogin(db, admin.Login)
 
 	if admin.Id == 0 {
-		err := errors.New("admin not found")
-		cute.Check("ERROR", err)
-		return false
+		return errors.New("admin not found")
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(p))
 
 	if err != nil {
-		cute.Check("invalid password", err)
-		return false
+		return errors.New("invalid password")
 	}
 
-	return true
+	return nil
 }
