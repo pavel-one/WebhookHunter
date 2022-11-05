@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/dustin/go-humanize"
 	"net/http"
 	"strings"
 
@@ -14,6 +15,13 @@ import (
 type HunterController struct {
 	BaseController
 	DatabaseController
+}
+
+type ChannelResponse struct {
+	ID    uint   `json:"id"`
+	Path  string `json:"path"`
+	Date  string `json:"date"`
+	Count uint   `json:"count"`
 }
 
 func (c *HunterController) Init(db *sqlx.DB) {
@@ -65,6 +73,8 @@ func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
 
 func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
 	var hunter models.Hunter
+	var response []ChannelResponse
+
 	domainArr := strings.Split(r.Host, ".")
 	if len(domainArr) < 3 {
 		c.NotFound(w, r)
@@ -89,7 +99,16 @@ func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.JSON(w, http.StatusOK, channels)
+	for _, channel := range channels {
+		response = append(response, ChannelResponse{
+			ID:    channel.Id,
+			Path:  channel.Path,
+			Date:  humanize.Time(channel.CreatedAt.Time),
+			Count: channel.RequestCount,
+		})
+	}
+
+	c.JSON(w, http.StatusOK, response)
 }
 
 func (c *HunterController) Index(w http.ResponseWriter, r *http.Request) {

@@ -51,10 +51,11 @@ WITH hunter as (
         VALUES ($1, $2, $3, $4)
         RETURNING id
 )
-INSERT INTO channels (hunter_id, path)
+INSERT INTO channels (hunter_id, path, created_at)
 VALUES (
         (select hunter.id from hunter),
-        '/') 
+        '/',
+        now()) 
 `, h.Id, h.Ip, h.CreatedAt, h.Slug)
 	err := tx.Commit()
 	if err != nil {

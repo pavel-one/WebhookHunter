@@ -11,4 +11,7 @@ require (
 	github.com/lib/pq v1.10.6
 )
 
-require gopkg.in/guregu/null.v4 v4.0.0 // indirect
+require (
+	github.com/dustin/go-humanize v1.0.0 // indirect
+	gopkg.in/guregu/null.v4 v4.0.0 // indirect
+)

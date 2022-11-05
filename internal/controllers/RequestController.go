@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"io"
@@ -29,7 +28,7 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	var RequestModel models.RequestModel
 	var body []byte
 
-	channel = mux.Vars(r)["channel"]
+	channel = strings.ReplaceAll(r.RequestURI, "/request/", "/")
 	if channel == "" {
 		channel = "/"
 	}
