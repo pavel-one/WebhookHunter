@@ -2,10 +2,20 @@
   <div>
     <div class="dashboard-container">
       <div class="menu">
-        <menu-item v-for="item in menu" :name="item.name" :count="item.count" :date="item.date"></menu-item>
+        <menu-item v-for="item in menu" :name="item.path" :count="item.count" :date="item.date"></menu-item>
       </div>
       <div class="logs">
-        <log-item v-for="log in logs" :date="log.date" :data="log.data"></log-item>
+        <div v-if="!this.connection" class="wait">
+          <div class="icon">
+            <font-awesome-icon icon="fa-solid fa-water" />
+          </div>
+          <div class="text">
+            Select channel
+          </div>
+        </div>
+        <div v-else>
+          <log-item v-for="log in logs" :date="log.date" :data="log.data"></log-item>
+        </div>
       </div>
     </div>
   </div>
@@ -14,57 +24,13 @@
 <script>
 import MenuItem from "./chunks/menu-item";
 import LogItem from "./chunks/log-item";
+import axios from "axios";
 export default {
   components: {MenuItem, LogItem},
   data: function () {
     return {
-      menu: [
-        {
-          name: "Test",
-          count: 0,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 1",
-          count: 0,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 2",
-          count: 1,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 3",
-          count: 2,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 4",
-          count: 6,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 5",
-          count: 12,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 6",
-          count: 8,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 7",
-          count: 5,
-          date: "04.09.2022"
-        },
-        {
-          name: "Test 8",
-          count: 10,
-          date: "04.09.2022"
-        },
-      ],
+      connection: null,
+      menu: [],
       logs: [
         {
           date: "21:33 04.09.2022",
@@ -251,7 +217,28 @@ export default {
     }
   },
   mounted() {
-    this.connect()
+    // this.connect()
+    axios.get('/api/v1/channels/').then(response => {
+      this.menu = response.data
+    })
   }
 }
 </script>
+
+<style lang="scss" scoped>
+  .wait {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    text-transform: uppercase;
+    .icon {
+      font-size: 5em;
+      color: #20c984;
+      text-shadow: 0 0 20px #20c984;
+    }
+  }
+</style>

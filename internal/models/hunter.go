@@ -116,7 +116,11 @@ func (h *Hunter) Channels(db *sqlx.DB) ([]Channel, error) {
 		return nil, errors.New("model not exists")
 	}
 
-	err := db.Select(&channels, `SELECT * FROM channels WHERE hunter_id=$1`, h.Id)
+	err := db.Select(&channels, `select c.id, hunter_id, c.path, c.redirect, c.created_at, count(r.id) request_count
+										from channels as c
+												 left join requests r on c.id = r.channel_id
+										WHERE hunter_id = $1
+										group by c.id`, h.Id)
 	if err != nil {
 		return nil, err
 	}
