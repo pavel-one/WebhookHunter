@@ -221,10 +221,11 @@ export default {
     align-items: center;
     font-size: 2em;
     text-transform: uppercase;
-    .icon {
-      font-size: 5em;
-      color: #20c984;
-      text-shadow: 0 0 20px #20c984;
-    }
+  }
+
+  .icon {
+    font-size: 5em;
+    color: #20c984;
+    text-shadow: 0 0 20px #20c984;
   }
 </style>

@@ -10,7 +10,6 @@ import (
 
 //go:embed frontend/index.html
 //go:embed frontend/dist/*
-//go:embed frontend/fonts/vendor/@fortawesome/fontawesome-free/*
 var Assets embed.FS
 
 type fsFunc func(name string) (fs.File, error)
