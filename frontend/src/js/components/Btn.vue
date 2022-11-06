@@ -2,7 +2,7 @@
   <div class="btn">
     <div class="btn-wrapper">
       <div v-if="icon" class="btn-icon">
-        <i :class="icon"></i>
+        <font-awesome-icon :icon="icon" />
       </div>
       <div class="btn-text">
         <slot></slot>
