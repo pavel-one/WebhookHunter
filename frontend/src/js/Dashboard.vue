@@ -177,50 +177,36 @@ export default {
     }
   },
   methods: {
-    connect: function (timer) {
-      let socket = new WebSocket("ws://" + document.location.host + "/ws/");
+    getChannels: function () {
+      axios.get('/api/v1/channels/').then(response => {
+        this.menu = response.data
+      })
+    },
+    connect: function () {
+      let socket = new WebSocket("ws://" + document.location.host + "/ws/root");
 
-      let timerMessage
-      socket.onopen = e => {
-        if (timer) {
-          clearInterval(timer)
+      socket.onmessage = event => {
+        const response = JSON.parse(event.data)
+        switch (response.event) {
+          case 'UpdateChannels':
+            this.getChannels()
+            break;
+          case 'UpdateCounts':
+            this.getChannels()
         }
 
-        let i = 0;
-        timerMessage = setInterval(function () {
-          i++
-          socket.send("Frontend "+i);
-        }, 500)
-      };
-
-      // socket.onclose = event => {
-      //   clearInterval(timerMessage)
-      //
-      //   if (event.wasClean) {
-      //     console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
-      //   } else {
-      //     let timerid = setInterval(() => {
-      //       console.log('onclose! new reconnect')
-      //       this.connect(timerid)
-      //     }, 2000)
-      //   }
-      // };
-
-      socket.onmessage = function(event) {
-        console.log('Server: '+event.data)
+        console.log('Server:', response)
       };
 
       socket.onerror = event => {
-        console.log("ERROR!!", event)
+        console.log("ERROR!!", event.data)
         socket.close()
       }
-    }
+    },
   },
   mounted() {
-    // this.connect()
-    axios.get('/api/v1/channels/').then(response => {
-      this.menu = response.data
-    })
+    this.connect()
+    this.getChannels()
   }
 }
 </script>

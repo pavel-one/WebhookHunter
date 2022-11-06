@@ -15,10 +15,12 @@ import (
 type RequestController struct {
 	BaseController
 	DatabaseController
+	WriteSocketController
 }
 
-func (c *RequestController) Init(db *sqlx.DB) {
+func (c *RequestController) Init(db *sqlx.DB, ch chan<- SocketMessage) {
 	c.DB = db
+	c.socketCh = ch
 }
 
 func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +50,11 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 
 	if chModel.Id == 0 {
 		err, chModel = hunter.CreateChannel(c.DB, channel)
+		c.socketCh <- EventMessage{
+			Domain:  hunter.Slug,
+			Channel: "root",
+			Event:   "UpdateChannels",
+		}.ToSocket()
 	}
 
 	if err != nil {
@@ -124,6 +131,12 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		c.Error(w, http.StatusBadGateway, errors.New("error save request"))
 		return
 	}
+
+	c.socketCh <- EventMessage{
+		Domain:  hunter.Slug,
+		Channel: "root",
+		Event:   "UpdateCounts",
+	}.ToSocket()
 
 	c.JSON(w, http.StatusCreated, map[string]any{
 		"status": http.StatusText(http.StatusCreated),

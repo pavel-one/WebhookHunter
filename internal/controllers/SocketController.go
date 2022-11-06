@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -18,6 +19,29 @@ type SocketMessage struct {
 	Message string
 }
 
+type EventMessage struct {
+	Domain  string
+	Channel string
+	Event   string
+}
+
+func (e EventMessage) ToSocket() SocketMessage {
+	str := make(map[string]any)
+	str["message"] = ""
+	str["event"] = e.Event
+
+	marshal, err := json.Marshal(str)
+	if err != nil {
+		return SocketMessage{}
+	}
+
+	return SocketMessage{
+		Domain:  e.Domain,
+		Channel: e.Channel,
+		Message: string(marshal),
+	}
+}
+
 type Connections map[*websocket.Conn]bool
 type Channels map[string]Connections
 type Hub map[string]Channels
@@ -25,12 +49,12 @@ type Hub map[string]Channels
 type SocketController struct {
 	BaseController
 	DatabaseController
-	Upgrader     websocket.Upgrader
-	Hub          Hub
-	MessageChain chan SocketMessage
+	UseSocketController
+	Upgrader websocket.Upgrader
+	Hub      Hub
 }
 
-func (c *SocketController) Init(db *sqlx.DB) {
+func (c *SocketController) Init(db *sqlx.DB, ch chan SocketMessage) {
 
 	c.DB = db
 	c.Upgrader = websocket.Upgrader{
@@ -38,7 +62,7 @@ func (c *SocketController) Init(db *sqlx.DB) {
 			return c.checkSlug(r)
 		},
 	}
-	c.MessageChain = make(chan SocketMessage, 10)
+	c.socketCh = ch
 
 	go c.WorkerMessage()
 }
@@ -56,6 +80,7 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	domain := strings.Split(r.Host, ".")[0]
 
 	channel = mux.Vars(r)["channel"]
+	log.Printf("[DEBUG] Socket connect [%s] channel", channel)
 
 	if channel == "" {
 		channel = "/"
@@ -65,13 +90,6 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 
 	if hunter.Id == "" || err != nil {
 		log.Printf("[WARNING] cannot find hunter with %v slug", domain)
-		return
-	}
-
-	err, chModel := hunter.FindChannelByPath(c.DB, channel)
-
-	if chModel.Id == 0 || err != nil {
-		log.Printf("[WARNING] try connect channel %s not found", channel)
 		return
 	}
 
@@ -133,7 +151,7 @@ func (c *SocketController) dropConnection(conn *websocket.Conn, domain string, c
 }
 
 func (c *SocketController) WorkerMessage() {
-	for message := range c.MessageChain {
+	for message := range c.socketCh {
 		if len(c.Hub[message.Domain][message.Channel]) == 0 {
 			continue
 		}
@@ -159,6 +177,10 @@ func (c *SocketController) checkSlug(r *http.Request) bool {
 	}
 
 	domain := strings.Split(r.Host, ".")
+
+	if domain[0] == "root" {
+		return true
+	}
 
 	hunter := new(models.Hunter)
 	hunter.FindBySlug(c.DB, domain[0])

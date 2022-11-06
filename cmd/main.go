@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"log"
 	"os"
-	"time"
 )
 
 func main() {
@@ -18,14 +16,15 @@ func main() {
 	socket := new(base.App)
 	socket.Init()
 
+	socketChannel := make(chan controllers.SocketMessage, 10)
 	socketController := new(controllers.SocketController)
-	socketController.Init(socket.DB)
+	socketController.Init(socket.DB, socketChannel)
 
 	hunterController := new(controllers.HunterController)
 	hunterController.Init(app.DB)
 
 	requestController := new(controllers.RequestController)
-	requestController.Init(app.DB)
+	requestController.Init(app.DB, socketChannel)
 
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
@@ -50,19 +49,19 @@ func main() {
 	go socket.ApiRun("8080", fatalChan)
 
 	// TODO: This example send group message, drop it
-	go func() {
-		i := 0
-
-		for {
-			socketController.MessageChain <- controllers.SocketMessage{
-				Domain:  "test",
-				Channel: "/",
-				Message: fmt.Sprintf("Send test message # %d", i),
-			}
-			time.Sleep(time.Second * 2)
-			i++
-		}
-	}()
+	//go func() {
+	//	i := 0
+	//
+	//	for {
+	//		socketChannel <- controllers.SocketMessage{
+	//			Domain:  "test",
+	//			Channel: "root",
+	//			Message: fmt.Sprintf("Send test message # %d", i),
+	//		}
+	//		time.Sleep(time.Second * 2)
+	//		i++
+	//	}
+	//}()
 
 	err := <-fatalChan
 	if err != nil {
