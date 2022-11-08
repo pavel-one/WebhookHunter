@@ -1,1 +1,0 @@
-ALTER TABLE hunters DROP COLUMN slug
