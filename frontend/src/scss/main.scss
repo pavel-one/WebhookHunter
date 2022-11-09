@@ -22,6 +22,7 @@ $text-color2: #5a5a5a;
   &::-webkit-scrollbar-track {
     background: #111111;
   }
+
   &::-webkit-scrollbar-thumb {
     background: $accent-color;
   }
@@ -50,11 +51,13 @@ body {
   //justify-content: center;
   box-shadow: $default-shadow;
   height: 600px;
+
   .menu {
     border-right: 1px solid #222222;
     width: 300px;
     height: 100%;
     overflow-y: auto;
+
     .menu-item {
       padding: 10px 20px;
       transition: .5s;
@@ -71,6 +74,7 @@ body {
         margin: 5px 0;
         color: $text-color2;
       }
+
       .date {
         font-size: .8em;
         margin-top: 5px;
@@ -79,6 +83,7 @@ body {
       &:hover {
         box-shadow: $default-shadow;
         cursor: pointer;
+
         .name {
           color: $accent-color;
         }
@@ -218,34 +223,63 @@ body {
     cursor: pointer;
     user-select: none;
   }
-  .jv-button { color: #49b3ff }
+
+  .jv-button {
+    color: #49b3ff
+  }
+
   .jv-key {
     color: $text-color;
     margin-right: 5px;
   }
+
   .jv-item {
-    &.jv-array { color: #111111 }
-    &.jv-boolean { color: #fc1e70 }
-    &.jv-function { color: #067bca }
-    &.jv-number { color: #fc1e70 }
-    &.jv-number-float { color: #fc1e70 }
-    &.jv-number-integer { color: #fc1e70 }
+    &.jv-array {
+      color: #111111
+    }
+
+    &.jv-boolean {
+      color: #fc1e70
+    }
+
+    &.jv-function {
+      color: #067bca
+    }
+
+    &.jv-number {
+      color: #fc1e70
+    }
+
+    &.jv-number-float {
+      color: #fc1e70
+    }
+
+    &.jv-number-integer {
+      color: #fc1e70
+    }
+
     &.jv-object {
       color: $text-color2
     }
-    &.jv-undefined { color: #e08331 }
+
+    &.jv-undefined {
+      color: #e08331
+    }
+
     &.jv-string {
       color: #42b983;
       word-break: break-word;
       white-space: normal;
     }
   }
+
   .jv-code {
     .jv-toggle {
       &:before {
         padding: 0px 2px;
         border-radius: 2px;
       }
+
       &:hover {
         &:before {
           background: #eee;
@@ -299,4 +333,18 @@ body {
   100% {
     opacity: 1;
   }
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(-30px);
+  opacity: 0;
 }

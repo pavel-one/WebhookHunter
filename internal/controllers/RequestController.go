@@ -139,6 +139,7 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		Domain:  hunter.Slug,
 		Channel: "root",
 		Event:   "UpdateCounts",
+		Data:    RequestModel,
 	}.ToSocket()
 
 	c.JSON(w, http.StatusCreated, map[string]any{

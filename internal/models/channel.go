@@ -9,7 +9,6 @@ import (
 
 type Channel struct {
 	Id           uint      `db:"id" json:"id"`
-	HunterSlug   string    `db:"hunter_slug" json:"hunter_slug"`
 	Path         string    `db:"path" json:"path"`
 	CreatedAt    null.Time `db:"created_at" json:"date"`
 	RequestCount uint      `db:"request_count" json:"count"`
@@ -18,8 +17,8 @@ type Channel struct {
 func (c *Channel) Create(db *sqlx.DB) error {
 	c.CreatedAt = null.TimeFrom(time.Now())
 
-	_, err := db.NamedExec(`INSERT INTO channels (hunter_slug, path, created_at) 
-								VALUES (:hunter_slug, :path, :created_at)`, c)
+	_, err := db.NamedExec(`INSERT INTO channels (path, created_at) 
+								VALUES (:path, :created_at)`, c)
 
 	if err != nil {
 		return errors.New("failed to create channel " + err.Error())

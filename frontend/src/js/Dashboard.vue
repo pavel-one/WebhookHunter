@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="dashboard-container">
-      <div class="menu">
-        <menu-item v-for="item in menu" :name="item.path" :count="item.count" :date="item.date"></menu-item>
-      </div>
+      <transition-group tag="div" name="slide-fade" class="menu">
+          <menu-item v-for="item in menu" :key="item.id" :name="item.path" :count="item.count" :date="item.date"></menu-item>
+      </transition-group>
       <div class="logs">
         <div v-if="!this.connection" class="wait">
           <div class="icon">

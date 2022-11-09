@@ -63,8 +63,7 @@ func (h *Hunter) CreateChannel(channel string) (error, Channel) {
 	}
 
 	ch := Channel{
-		HunterSlug: h.Slug,
-		Path:       channel,
+		Path: channel,
 	}
 
 	if err := ch.Create(db); err != nil {
@@ -77,16 +76,12 @@ func (h *Hunter) CreateChannel(channel string) (error, Channel) {
 func (h *Hunter) FindChannelByPath(channel string) (error, Channel) {
 	var ch Channel
 
-	if h.Slug == "" {
-		return errors.New("hunter not exists"), ch
-	}
-
 	db, err := sqlite.GetDb(h.Slug)
 	if err != nil {
 		return err, Channel{}
 	}
 
-	err = db.Get(&ch, "SELECT * FROM channels WHERE hunter_slug=$1 and path=$2", h.Slug, channel)
+	err = db.Get(&ch, "SELECT * FROM channels WHERE path=$1", channel)
 	if err != nil {
 		return err, ch
 	}
@@ -106,10 +101,9 @@ func (h *Hunter) Channels() ([]Channel, error) {
 		return nil, err
 	}
 
-	err = db.Select(&channels, `select c.id, hunter_slug, c.path, c.created_at, count(r.id) request_count
+	err = db.Select(&channels, `select c.id, c.path, c.created_at, count(r.id) request_count
 										from channels as c
 												 left join requests r on c.id = r.channel_id
-										WHERE hunter_slug = $1
 										group by c.id`, h.Slug)
 	if err != nil {
 		return nil, err

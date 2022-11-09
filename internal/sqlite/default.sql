@@ -1,7 +1,6 @@
 create table channels
 (
     id          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    hunter_slug varchar                           NOT NULL,
     path        varchar                           NOT NULL,
     created_at  timestamp
 );

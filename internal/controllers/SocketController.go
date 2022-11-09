@@ -22,12 +22,14 @@ type EventMessage struct {
 	Domain  string
 	Channel string
 	Event   string
+	Data    any
 }
 
 func (e EventMessage) ToSocket() SocketMessage {
 	str := make(map[string]any)
 	str["message"] = ""
 	str["event"] = e.Event
+	str["data"] = e.Data
 
 	marshal, err := json.Marshal(str)
 	if err != nil {

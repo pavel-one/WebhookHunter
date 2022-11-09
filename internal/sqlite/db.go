@@ -9,7 +9,7 @@ import (
 )
 
 func GetDb(userSlug string) (db *sqlx.DB, err error) {
-	db, err = sqlx.Open("sqlite3", "./storage/users/"+userSlug+"/db.sqlite3")
+	db, err = sqlx.Open("sqlite3", "./storage/users/"+userSlug+"/"+userSlug+".sqlite3")
 	if err != nil {
 		return nil, err
 	}
