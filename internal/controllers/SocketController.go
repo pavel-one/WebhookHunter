@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"log"
 	"net/http"
@@ -48,15 +47,13 @@ type Hub map[string]Channels
 
 type SocketController struct {
 	BaseController
-	DatabaseController
 	UseSocketController
 	Upgrader websocket.Upgrader
 	Hub      Hub
 }
 
-func (c *SocketController) Init(db *sqlx.DB, ch chan SocketMessage) {
+func (c *SocketController) Init(ch chan SocketMessage) {
 
-	c.DB = db
 	c.Upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return c.checkSlug(r)
@@ -86,9 +83,9 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 		channel = "/"
 	}
 
-	err = hunter.FindBySlug(c.DB, domain)
+	err = hunter.FindBySlug(domain)
 
-	if hunter.Id == "" || err != nil {
+	if hunter.Slug == "" || err != nil {
 		log.Printf("[WARNING] cannot find hunter with %v slug", domain)
 		return
 	}
@@ -183,9 +180,12 @@ func (c *SocketController) checkSlug(r *http.Request) bool {
 	}
 
 	hunter := new(models.Hunter)
-	hunter.FindBySlug(c.DB, domain[0])
 
-	if hunter.Id == "" {
+	if err := hunter.FindBySlug(domain[0]); err != nil {
+		return false
+	}
+
+	if hunter.Slug == "" {
 		return false
 	}
 

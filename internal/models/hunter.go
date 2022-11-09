@@ -2,41 +2,69 @@ package models
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/WebhookWatcher/internal/helpers"
-	"log"
+	petname "github.com/dustinkirkland/golang-petname"
+	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"os"
-	"time"
 )
 
 type Hunter struct {
-	Slug string `json:"slug" db:"slug"`
+	Slug string `json:"slug"`
 }
 
 func (h *Hunter) Create() error {
-	h.Slug = uuid.NewString()
-	os.MkdirAll("storage/users/", os.ModePerm)
+	h.Slug = petname.Generate(2, "-")
+	_, err := os.Stat("./storage/users/")
+	if err != nil {
+		h.Slug = "default"
+	}
+
+	path := "./storage/users/" + h.Slug
+	err = os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	db, err := sqlite.GetDb(h.Slug)
+	if err != nil {
+		return err
+	}
+
+	err = sqlite.SetDefaultSchema(db)
+	if err != nil {
+		return err
+	}
+
+	err, _ = h.CreateChannel("/")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (h *Hunter) Find(db *sqlx.DB, id string) error {
-	return db.Get(h, "SELECT * FROM hunters WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
+func (h *Hunter) FindBySlug(slug string) error {
+	_, err := os.Stat("storage/users/" + slug)
+	if err != nil {
+		return err
+	}
+
+	h.Slug = slug
+	return nil
 }
 
-func (h *Hunter) FindBySlug(db *sqlx.DB, slug string) error {
-	return db.Get(h, "SELECT * FROM hunters WHERE slug=$1 LIMIT 1", slug)
-}
-
-func (h *Hunter) CreateChannel(db *sqlx.DB, channel string) (error, Channel) {
-	if h.Id == "" {
+func (h *Hunter) CreateChannel(channel string) (error, Channel) {
+	if h.Slug == "" {
 		return errors.New("hunter not exists"), Channel{}
 	}
 
+	db, err := sqlite.GetDb(h.Slug)
+	if err != nil {
+		return err, Channel{}
+	}
+
 	ch := Channel{
-		HunterId: h.Id,
-		Path:     channel,
+		HunterSlug: h.Slug,
+		Path:       channel,
 	}
 
 	if err := ch.Create(db); err != nil {
@@ -46,14 +74,19 @@ func (h *Hunter) CreateChannel(db *sqlx.DB, channel string) (error, Channel) {
 	return nil, ch
 }
 
-func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (error, Channel) {
+func (h *Hunter) FindChannelByPath(channel string) (error, Channel) {
 	var ch Channel
 
-	if h.Id == "" {
+	if h.Slug == "" {
 		return errors.New("hunter not exists"), ch
 	}
 
-	err := db.Get(&ch, "SELECT * FROM channels WHERE hunter_id=$1 and path=$2", h.Id, channel)
+	db, err := sqlite.GetDb(h.Slug)
+	if err != nil {
+		return err, Channel{}
+	}
+
+	err = db.Get(&ch, "SELECT * FROM channels WHERE hunter_slug=$1 and path=$2", h.Slug, channel)
 	if err != nil {
 		return err, ch
 	}
@@ -61,18 +94,23 @@ func (h *Hunter) FindChannelByPath(db *sqlx.DB, channel string) (error, Channel)
 	return nil, ch
 }
 
-func (h *Hunter) Channels(db *sqlx.DB) ([]Channel, error) {
+func (h *Hunter) Channels() ([]Channel, error) {
 	var channels []Channel
 
-	if h.Id == "" {
+	if h.Slug == "" {
 		return nil, errors.New("model not exists")
 	}
 
-	err := db.Select(&channels, `select c.id, hunter_id, c.path, c.redirect, c.created_at, count(r.id) request_count
+	db, err := sqlite.GetDb(h.Slug)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Select(&channels, `select c.id, hunter_slug, c.path, c.created_at, count(r.id) request_count
 										from channels as c
 												 left join requests r on c.id = r.channel_id
-										WHERE hunter_id = $1
-										group by c.id`, h.Id)
+										WHERE hunter_slug = $1
+										group by c.id`, h.Slug)
 	if err != nil {
 		return nil, err
 	}

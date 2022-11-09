@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
+	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"io"
 	"log"
 	"net/http"
@@ -14,12 +14,10 @@ import (
 
 type RequestController struct {
 	BaseController
-	DatabaseController
 	WriteSocketController
 }
 
-func (c *RequestController) Init(db *sqlx.DB, ch chan<- SocketMessage) {
-	c.DB = db
+func (c *RequestController) Init(ch chan<- SocketMessage) {
 	c.socketCh = ch
 }
 
@@ -35,21 +33,21 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		channel = "/"
 	}
 
-	if err := hunter.FindBySlug(c.DB, domain); err != nil {
+	if err := hunter.FindBySlug(domain); err != nil {
 		log.Printf("[ERROR] find hunter error %s", err)
 		c.Error(w, http.StatusBadRequest, errors.New("hunter not found"))
 		return
 	}
 
-	if hunter.Id == "" {
+	if hunter.Slug == "" {
 		c.Error(w, http.StatusNotFound, errors.New("hunter not found"))
 		return
 	}
 
-	err, chModel := hunter.FindChannelByPath(c.DB, channel)
+	err, chModel := hunter.FindChannelByPath(channel)
 
 	if chModel.Id == 0 {
-		err, chModel = hunter.CreateChannel(c.DB, channel)
+		err, chModel = hunter.CreateChannel(channel)
 		c.socketCh <- EventMessage{
 			Domain:  hunter.Slug,
 			Channel: "root",
@@ -127,7 +125,12 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	RequestModel.Path = r.URL.Path
 	RequestModel.Query = q
 
-	if err := RequestModel.Create(c.DB); err != nil {
+	db, err := sqlite.GetDb(hunter.Slug)
+	if err != nil {
+		return
+	}
+
+	if err := RequestModel.Create(db); err != nil {
 		c.Error(w, http.StatusBadGateway, errors.New("error save request"))
 		return
 	}

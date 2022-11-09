@@ -21,15 +21,3 @@ services:
       - /etc/shadow:/etc/shadow
       - ~/go/pkg:/go/pkg # для синхронизиации пакетов с IDE
     command: ["air"]
-  db:
-    image: postgres:alpine
-    restart: unless-stopped
-    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-#    volumes:
-#      - ./docker/pg/data:/var/lib/postgresql/data
-    ports:
-      - ${DB_PORT:-5432}:5432

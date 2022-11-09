@@ -8,6 +8,6 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN apk update
-RUN apk add net-tools lsof
+RUN apk add net-tools lsof gcc build-base
 
 RUN rm -rf /var/cache/apk/*

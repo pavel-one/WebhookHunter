@@ -18,13 +18,13 @@ func main() {
 
 	socketChannel := make(chan controllers.SocketMessage, 10)
 	socketController := new(controllers.SocketController)
-	socketController.Init(socket.DB, socketChannel)
+	socketController.Init(socketChannel)
 
 	hunterController := new(controllers.HunterController)
-	hunterController.Init(app.DB)
+	hunterController.Init()
 
 	requestController := new(controllers.RequestController)
-	requestController.Init(app.DB, socketChannel)
+	requestController.Init(socketChannel)
 
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
@@ -47,21 +47,6 @@ func main() {
 
 	go app.ApiRun("80", fatalChan)
 	go socket.ApiRun("8080", fatalChan)
-
-	// TODO: This example send group message, drop it
-	//go func() {
-	//	i := 0
-	//
-	//	for {
-	//		socketChannel <- controllers.SocketMessage{
-	//			Domain:  "test",
-	//			Channel: "root",
-	//			Message: fmt.Sprintf("Send test message # %d", i),
-	//		}
-	//		time.Sleep(time.Second * 2)
-	//		i++
-	//	}
-	//}()
 
 	err := <-fatalChan
 	if err != nil {

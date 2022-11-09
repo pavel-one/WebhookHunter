@@ -13,5 +13,7 @@ require (
 
 require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	gopkg.in/guregu/null.v4 v4.0.0 // indirect
 )

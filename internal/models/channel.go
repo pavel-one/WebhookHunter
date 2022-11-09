@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
@@ -9,19 +8,18 @@ import (
 )
 
 type Channel struct {
-	Id           uint            `db:"id" json:"id"`
-	HunterId     string          `db:"hunter_id" json:"hunter_id"`
-	Path         string          `db:"path" json:"path"`
-	Redirect     *sql.NullString `db:"redirect" json:"-"`
-	CreatedAt    null.Time       `db:"created_at" json:"date"`
-	RequestCount uint            `db:"request_count" json:"count"`
+	Id           uint      `db:"id" json:"id"`
+	HunterSlug   string    `db:"hunter_slug" json:"hunter_slug"`
+	Path         string    `db:"path" json:"path"`
+	CreatedAt    null.Time `db:"created_at" json:"date"`
+	RequestCount uint      `db:"request_count" json:"count"`
 }
 
 func (c *Channel) Create(db *sqlx.DB) error {
 	c.CreatedAt = null.TimeFrom(time.Now())
 
-	_, err := db.NamedExec(`INSERT INTO channels (hunter_id, path, redirect, created_at) 
-								VALUES (:hunter_id, :path, :redirect, :created_at)`, c)
+	_, err := db.NamedExec(`INSERT INTO channels (hunter_slug, path, created_at) 
+								VALUES (:hunter_slug, :path, :created_at)`, c)
 
 	if err != nil {
 		return errors.New("failed to create channel " + err.Error())

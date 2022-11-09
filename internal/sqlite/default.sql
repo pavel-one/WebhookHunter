@@ -1,25 +1,21 @@
 create table channels
 (
-    id          bigserial
-        primary key,
-    hunter_slug varchar,
-    path        varchar not null,
-    redirect    varchar,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    hunter_slug varchar                           NOT NULL,
+    path        varchar                           NOT NULL,
     created_at  timestamp
 );
 
 create table requests
 (
-    id         bigserial
-        constraint pk_requests
-            primary key,
-    request    json      not null,
-    created_at timestamp not null,
-    channel_id bigint
+    id         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    request    json                              NOT NULL,
+    created_at timestamp                         NOT NULL,
+    channel_id INTEGER
         constraint requests_channels_id_fk
             references channels
             on delete cascade,
-    headers    json,
-    path       varchar   not null,
-    query      json
+    headers    json                              NOT NULL,
+    path       varchar                           NOT NULL,
+    query      json                              NOT NULL
 );

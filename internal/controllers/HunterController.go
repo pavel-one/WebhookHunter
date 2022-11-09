@@ -7,14 +7,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/resources"
 )
 
 type HunterController struct {
 	BaseController
-	DatabaseController
 }
 
 type ChannelResponse struct {
@@ -24,16 +22,14 @@ type ChannelResponse struct {
 	Count uint   `json:"count"`
 }
 
-func (c *HunterController) Init(db *sqlx.DB) {
-	c.DB = db
+func (c *HunterController) Init() {
 }
 
 func (c *HunterController) Create(w http.ResponseWriter, r *http.Request) {
 	hunter := new(models.Hunter)
 	response := new(resources.HunterResponse)
 
-	hunter.Ip = r.RemoteAddr
-	if err := hunter.Create(c.DB); err != nil {
+	if err := hunter.Create(); err != nil {
 		c.Error(w, http.StatusBadRequest, err)
 		return
 	}
@@ -55,12 +51,12 @@ func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := hunter.FindBySlug(c.DB, request.Uri); err != nil {
+	if err := hunter.FindBySlug(request.Uri); err != nil {
 		c.Error(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
 
-	if hunter.Id == "" {
+	if hunter.Slug == "" {
 		c.Error(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
@@ -83,17 +79,17 @@ func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
 
 	domain := domainArr[0]
 
-	if err := hunter.FindBySlug(c.DB, domain); err != nil {
+	if err := hunter.FindBySlug(domain); err != nil {
 		c.Error(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
 
-	if hunter.Id == "" {
+	if hunter.Slug == "" {
 		c.NotFound(w, r)
 		return
 	}
 
-	channels, err := hunter.Channels(c.DB)
+	channels, err := hunter.Channels()
 	if err != nil {
 		c.NotFound(w, r)
 		return

@@ -4,18 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	Root "github.com/pavel-one/WebhookWatcher"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
 type App struct {
-	DB     *sqlx.DB
 	Router *mux.Router
 	Server *http.Server
 }
@@ -26,20 +22,9 @@ func (a *App) Init() {
 		log.Fatalf("[FATAL] Not loading environment: %v", err)
 	}
 
-	db, err := sqlx.Connect("postgres", fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-	))
-
 	if err != nil {
 		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
 	}
-
-	a.DB = db
 	a.Router = mux.NewRouter()
 }
 
@@ -61,11 +46,6 @@ func (a *App) ApiRun(port string, ch chan error) {
 }
 
 func (a *App) Close() {
-	if err := a.DB.Close(); err != nil {
-		log.Fatalf("[FATAL] Unable to close database: %v", err)
-		return
-	}
-
 	if err := a.Server.Close(); err != nil {
 		log.Fatalf("[FATAL] Unable to close server: %v", err)
 		return
