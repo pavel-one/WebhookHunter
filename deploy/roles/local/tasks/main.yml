@@ -16,6 +16,14 @@
     dest: '{{BASE_PATH}}.env'
   tags: configuration
 
+- name: Build frontend
+  shell: |
+    npm install
+    npx mix
+  args:
+    chdir: '{{ BASE_PATH }}frontend'
+  tags: configuration
+
 - name: Build app
   shell: |
     make build
@@ -50,10 +58,3 @@
     chdir: '{{ BASE_PATH }}'
   tags: configuration
 
-- name: Build frontend
-  shell: |
-    npm install
-    npx mix
-  args:
-    chdir: '{{ BASE_PATH }}frontend'
-  tags: configuration
