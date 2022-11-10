@@ -1,0 +1,7 @@
+- name: Server
+  hosts:
+    - pavel-one
+  roles:
+    - local
+  gather_facts: no
+  serial: 2
