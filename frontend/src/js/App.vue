@@ -27,8 +27,12 @@ export default {
         })
       } catch (e) {
         url.splice(0, 1)
-        const redirectUrl = url.join(".")
-        window.location.href = window.location.protocol + "//" + redirectUrl
+        let redirectUrl = url.join(".")
+        redirectUrl = window.location.protocol + "//" + redirectUrl
+        if (window.location.port) {
+          redirectUrl = redirectUrl + ':' + window.location.port
+        }
+        window.location.href = redirectUrl
         return
       }
 
