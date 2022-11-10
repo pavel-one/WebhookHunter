@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	Root "github.com/pavel-one/WebhookWatcher"
 	"log"
 	"net/http"
@@ -17,14 +16,6 @@ type App struct {
 }
 
 func (a *App) Init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("[FATAL] Not loading environment: %v", err)
-	}
-
-	if err != nil {
-		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
-	}
 	a.Router = mux.NewRouter()
 }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func TrimJson(jsonBytes []byte) []byte {
@@ -15,6 +16,13 @@ func TrimJson(jsonBytes []byte) []byte {
 	}
 
 	return buffer.Bytes()
+}
+
+func GetDomainWithHost(host string) string {
+	domain := strings.Split(host, ":")
+	domain = strings.Split(domain[0], ".")
+
+	return domain[0]
 }
 
 func Handler404(w http.ResponseWriter, r *http.Request) {

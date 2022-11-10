@@ -18,6 +18,14 @@ func (h *Hunter) Create() error {
 		h.Slug = "default"
 	}
 
+	return h.CreateWithName()
+}
+
+func (h *Hunter) CreateWithName() (err error) {
+	if h.Slug == "" {
+		return errors.New("not set error")
+	}
+
 	path := "./storage/users/" + h.Slug
 	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
@@ -45,6 +53,15 @@ func (h *Hunter) Create() error {
 func (h *Hunter) FindBySlug(slug string) error {
 	_, err := os.Stat("storage/users/" + slug)
 	if err != nil {
+		//if slug == "localhost" {
+		//	h.Slug = "localhost"
+		//	err := h.CreateWithName()
+		//	if err != nil {
+		//		return err
+		//	}
+		//} else {
+		//	return err
+		//}
 		return err
 	}
 

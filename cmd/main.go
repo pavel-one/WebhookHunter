@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"log"
 	"os"
+	"os/exec"
+	"runtime"
 )
 
 func main() {
@@ -29,16 +32,16 @@ func main() {
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
 
-	//load static files
-	app.Static("/web/", "frontend")
-
 	//api
-	app.GET("/", hunterController.Index)
-	app.POST("/", hunterController.Create)
-	app.POST("/check/", hunterController.Check)
-	app.GET("/channels/", hunterController.GetChannels)
-	app.DELETE("/channels/{id:[0-9]+}", hunterController.DropChannel)
-	app.Prefix("/request/", requestController.NewRequest)
+	app.GET("/api/v1/", hunterController.Index)
+	app.POST("/api/v1/", hunterController.Create)
+	app.POST("/api/v1/check/", hunterController.Check)
+	app.GET("/api/v1/channels/", hunterController.GetChannels)
+	app.DELETE("/api/v1/channels/{id:[0-9]+}", hunterController.DropChannel)
+	app.Prefix("/api/v1/request/", requestController.NewRequest)
+
+	//load static files
+	app.Static("/", "frontend")
 
 	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)
@@ -46,8 +49,20 @@ func main() {
 	socket.GET("/", socketController.Connect)
 	socket.GET("/{channel:[a-zA-Z0-9]+}", socketController.Connect)
 
-	go app.ApiRun("80", fatalChan)
+	go app.ApiRun("3000", fatalChan)
 	go socket.ApiRun("8080", fatalChan)
+
+	switch runtime.GOOS {
+	case "linux":
+		exec.Command("xdg-open", "http://localhost:3000").Start()
+		fmt.Println("Open http://localhost:3000 in browser...")
+	case "windows":
+		exec.Command("rundll32", "url.dll,FileProtocolHandler", "http://localhost:3000").Start()
+		fmt.Println("Open http://localhost:3000 in browser...")
+	case "darwin":
+		exec.Command("open", "http://localhost:3000").Start()
+		fmt.Println("Open http://localhost:3000 in browser...")
+	}
 
 	err := <-fatalChan
 	if err != nil {

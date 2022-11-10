@@ -10,11 +10,18 @@
     dest: '{{BASE_PATH}}docker-compose.yml'
   tags: configuration
 
-- name: Create .env file
-  template:
-    src: .env.j2
-    dest: '{{BASE_PATH}}.env'
+- name: Pulling image
+  shell: |
+    docker-compose pull
+  args:
+    chdir: '{{ BASE_PATH }}'
   tags: configuration
+
+#- name: Create .env file
+#  template:
+#    src: .env.j2
+#    dest: '{{BASE_PATH}}.env'
+#  tags: configuration
 
 - name: Build frontend
   shell: |

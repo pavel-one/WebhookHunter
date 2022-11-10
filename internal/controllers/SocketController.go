@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 )
 
 type SocketMessage struct {
@@ -76,7 +75,7 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer connection.Close()
-	domain := strings.Split(r.Host, ".")[0]
+	domain := helpers.GetDomainWithHost(r.Host)
 
 	channel = mux.Vars(r)["channel"]
 	log.Printf("[DEBUG] Socket connect [%s] channel", channel)
@@ -171,19 +170,15 @@ func messageHandler(message []byte) {
 }
 
 func (c *SocketController) checkSlug(r *http.Request) bool {
-	if r.Host == os.Getenv("DOMAIN") {
-		return false
-	}
+	domain := helpers.GetDomainWithHost(r.Host)
 
-	domain := strings.Split(r.Host, ".")
-
-	if domain[0] == "root" {
+	if domain == "root" {
 		return true
 	}
 
 	hunter := new(models.Hunter)
 
-	if err := hunter.FindBySlug(domain[0]); err != nil {
+	if err := hunter.FindBySlug(domain); err != nil {
 		return false
 	}
 

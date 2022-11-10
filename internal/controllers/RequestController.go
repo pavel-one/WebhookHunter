@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dustin/go-humanize"
+	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"io"
@@ -23,7 +24,7 @@ func (c *RequestController) Init(ch chan<- SocketMessage) {
 }
 
 func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
-	domain := strings.Split(r.Host, ".")[0]
+	domain := helpers.GetDomainWithHost(r.Host)
 	var channel string
 	var hunter models.Hunter
 	var RequestModel models.RequestModel

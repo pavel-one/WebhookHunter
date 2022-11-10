@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/dustin/go-humanize"
 	"github.com/gorilla/mux"
+	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"net/http"
 	"strconv"
@@ -57,8 +58,16 @@ func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := hunter.FindBySlug(request.Uri); err != nil {
-		c.Error(w, http.StatusNotFound, errors.New("not found"))
-		return
+		if request.Uri == "localhost" {
+			hunter.Slug = "localhost"
+			if err := hunter.CreateWithName(); err != nil {
+				c.Error(w, http.StatusBadGateway, errors.New("failed create"))
+				return
+			}
+		} else {
+			c.Error(w, http.StatusNotFound, errors.New("not found"))
+			return
+		}
 	}
 
 	if hunter.Slug == "" {
@@ -76,13 +85,7 @@ func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
 	var hunter models.Hunter
 	var response []ChannelResponse
 
-	domainArr := strings.Split(r.Host, ".")
-	if len(domainArr) < 3 {
-		c.NotFound(w, r)
-		return
-	}
-
-	domain := domainArr[0]
+	domain := helpers.GetDomainWithHost(r.Host)
 
 	if err := hunter.FindBySlug(domain); err != nil {
 		c.Error(w, http.StatusNotFound, errors.New("not found"))

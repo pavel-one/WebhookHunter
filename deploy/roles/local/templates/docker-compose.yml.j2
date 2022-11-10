@@ -1,19 +1,14 @@
 version: '3'
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    volumes:
-      - ./docker/nginx/templates:/etc/nginx/templates
-    ports:
-      - "80:80"
-    command: [nginx-debug, '-g', 'daemon off;']
   app:
     image: orendat/go:latest
     user: "{{USER}}:{{GROUP}}"
     environment:
       - GOCACHE=/usr/src/app/tmp/cache
     ports:
+      - "3000:3000"
+      - "8080:8080"
       - "2345:2345"
     volumes:
       - .:/usr/src/app
