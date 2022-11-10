@@ -2,7 +2,7 @@
   <div>
     <div class="dashboard-container">
       <transition-group tag="div" name="slide-fade" class="menu">
-          <menu-item v-for="item in menu" :key="item.id" :name="item.path" :count="item.count" :date="item.date"></menu-item>
+          <menu-item v-for="item in menu" :key="item.id" :id="item.id" :name="item.path" :count="item.count" :date="item.date"></menu-item>
       </transition-group>
       <div class="logs">
         <div v-if="!this.connection" class="wait">
@@ -179,7 +179,28 @@ export default {
   methods: {
     getChannels: function () {
       axios.get('/api/v1/channels/').then(response => {
+        if (!response.data) {
+          return
+        }
         this.menu = response.data
+      })
+    },
+    updateCount: function (data) {
+      this.menu.forEach((item, index) => {
+        if (item.id === data.id) {
+          this.menu[index].count = data.count
+        }
+      })
+    },
+    addChannel: function (data) {
+      this.menu.unshift(data)
+    },
+    dropChannel: function (data) {
+      this.menu.forEach((item, index) => {
+        if (item.id === data.id) {
+          console.log('dropped', item.id, data.id)
+          this.menu.splice(index, 1)
+        }
       })
     },
     connect: function () {
@@ -188,11 +209,15 @@ export default {
       socket.onmessage = event => {
         const response = JSON.parse(event.data)
         switch (response.event) {
-          case 'UpdateChannels':
-            this.getChannels()
-            break;
-          case 'UpdateCounts':
-            this.getChannels()
+          case 'AddChannel':
+            this.addChannel(response.data)
+            break
+          case 'UpdateCount':
+            this.updateCount(response.data)
+            break
+          case 'DropChannel':
+            this.dropChannel(response.data)
+            break
         }
 
         console.log('Server:', response)

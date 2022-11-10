@@ -21,7 +21,7 @@ func main() {
 	socketController.Init(socketChannel)
 
 	hunterController := new(controllers.HunterController)
-	hunterController.Init()
+	hunterController.Init(socketChannel)
 
 	requestController := new(controllers.RequestController)
 	requestController.Init(socketChannel)
@@ -37,6 +37,7 @@ func main() {
 	app.POST("/", hunterController.Create)
 	app.POST("/check/", hunterController.Check)
 	app.GET("/channels/", hunterController.GetChannels)
+	app.DELETE("/channels/{id:[0-9]+}", hunterController.DropChannel)
 	app.Prefix("/request/", requestController.NewRequest)
 
 	//websocket

@@ -60,6 +60,10 @@ func (a *App) POST(path string, method func(w http.ResponseWriter, r *http.Reque
 	a.Router.HandleFunc(path, method).Methods("POST")
 }
 
+func (a *App) DELETE(path string, method func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.HandleFunc(path, method).Methods("DELETE")
+}
+
 func (a *App) Prefix(prefix string, f http.HandlerFunc) {
 	a.Router.PathPrefix(prefix).HandlerFunc(f)
 }

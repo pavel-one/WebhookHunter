@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/dustin/go-humanize"
+	"github.com/gorilla/mux"
+	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/pavel-one/WebhookWatcher/internal/models"
@@ -13,6 +16,7 @@ import (
 
 type HunterController struct {
 	BaseController
+	WriteSocketController
 }
 
 type ChannelResponse struct {
@@ -22,7 +26,8 @@ type ChannelResponse struct {
 	Count uint   `json:"count"`
 }
 
-func (c *HunterController) Init() {
+func (c *HunterController) Init(ch chan<- SocketMessage) {
+	c.socketCh = ch
 }
 
 func (c *HunterController) Create(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +67,7 @@ func (c *HunterController) Check(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.JSON(w, http.StatusOK, map[string]any{
-		"status": "OK",
+		"status": http.StatusText(http.StatusOK),
 	})
 
 }
@@ -105,6 +110,63 @@ func (c *HunterController) GetChannels(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.JSON(w, http.StatusOK, response)
+}
+
+func (c *HunterController) DropChannel(w http.ResponseWriter, r *http.Request) {
+	var hunter models.Hunter
+	var channel models.Channel
+
+	domainArr := strings.Split(r.Host, ".")
+	if len(domainArr) < 3 {
+		c.NotFound(w, r)
+		return
+	}
+	domain := strings.Split(r.Host, ".")[0]
+
+	if err := hunter.FindBySlug(domain); err != nil {
+		c.NotFound(w, r)
+		return
+	}
+
+	db, err := sqlite.GetDb(hunter.Slug)
+	if err != nil {
+		c.NotFound(w, r)
+		return
+	}
+
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+
+	if err := channel.Find(db, id); err != nil {
+		c.NotFound(w, r)
+		return
+	}
+
+	if channel.Id == 0 {
+		c.NotFound(w, r)
+		return
+	}
+
+	if err := channel.Delete(db); err != nil {
+		c.NotFound(w, r)
+		return
+	}
+
+	c.socketCh <- EventMessage{
+		Domain:  hunter.Slug,
+		Channel: "root",
+		Event:   "DropChannel",
+		Data: ChannelResponse{
+			ID:    channel.Id,
+			Path:  channel.Path,
+			Date:  humanize.Time(channel.CreatedAt.Time),
+			Count: channel.RequestCount,
+		},
+	}.ToSocket()
+
+	c.JSON(w, http.StatusOK, map[string]any{
+		"status": http.StatusText(http.StatusOK),
+	})
+	return
 }
 
 func (c *HunterController) Index(w http.ResponseWriter, r *http.Request) {

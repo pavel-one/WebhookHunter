@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dustin/go-humanize"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
 	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"io"
@@ -51,7 +52,13 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		c.socketCh <- EventMessage{
 			Domain:  hunter.Slug,
 			Channel: "root",
-			Event:   "UpdateChannels",
+			Event:   "AddChannel",
+			Data: ChannelResponse{
+				ID:    chModel.Id,
+				Path:  chModel.Path,
+				Date:  humanize.Time(chModel.CreatedAt.Time),
+				Count: chModel.RequestCount,
+			},
 		}.ToSocket()
 	}
 
@@ -135,11 +142,17 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	counts, err := chModel.GetCounts(db)
+	if err != nil {
+		c.Error(w, http.StatusBadGateway, errors.New("error get counts"))
+		return
+	}
+
 	c.socketCh <- EventMessage{
 		Domain:  hunter.Slug,
 		Channel: "root",
-		Event:   "UpdateCounts",
-		Data:    RequestModel,
+		Event:   "UpdateCount",
+		Data:    counts,
 	}.ToSocket()
 
 	c.JSON(w, http.StatusCreated, map[string]any{

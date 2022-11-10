@@ -14,6 +14,11 @@ type Channel struct {
 	RequestCount uint      `db:"request_count" json:"count"`
 }
 
+type ChannelRequestsCount struct {
+	Id    uint `json:"id"`
+	Count uint `json:"count"`
+}
+
 func (c *Channel) Create(db *sqlx.DB) error {
 	c.CreatedAt = null.TimeFrom(time.Now())
 
@@ -32,15 +37,25 @@ func (c *Channel) Create(db *sqlx.DB) error {
 	return nil
 }
 
-func (c *Channel) Find(db *sqlx.DB, id int64) error {
-	var err error
-	err = db.Get(c, "SELECT * FROM channels WHERE id=$1 ORDER BY id DESC LIMIT 1", id)
-	err = db.Get(c.RequestCount, "SELECT count() FROM requests WHERE channel_id=$1", id)
+func (c *Channel) Find(db *sqlx.DB, id int) (err error) {
+	err = db.Get(c, `SELECT channels.*, count(r.id) as request_count FROM channels 
+    								LEFT JOIN requests r on channels.id = r.channel_id
+    								WHERE channels.id=$1
+    								GROUP BY channels.id`, id)
 
 	return err
 }
 
 func (c *Channel) Delete(db *sqlx.DB) error {
-	_, err := db.NamedExec("DELETE FROM channels WHERE id=$1", c.Id)
+	_, err := db.Exec("PRAGMA foreign_keys = ON; DELETE FROM channels WHERE id=$1", c.Id)
 	return err
+}
+
+func (c *Channel) GetCounts(db *sqlx.DB) (model ChannelRequestsCount, err error) {
+	err = db.Get(&model, `SELECT c.id, count(requests.id) as count FROM requests 
+    								LEFT JOIN channels c on c.id = requests.channel_id
+    								WHERE c.id=$1
+    								GROUP BY c.id`, c.Id)
+
+	return model, err
 }

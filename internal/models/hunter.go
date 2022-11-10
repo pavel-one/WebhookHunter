@@ -81,7 +81,7 @@ func (h *Hunter) FindChannelByPath(channel string) (error, Channel) {
 		return err, Channel{}
 	}
 
-	err = db.Get(&ch, "SELECT * FROM channels WHERE path=$1", channel)
+	err = db.Get(&ch, "SELECT * FROM channels WHERE path=$1 ORDER BY created_at desc", channel)
 	if err != nil {
 		return err, ch
 	}
@@ -92,10 +92,6 @@ func (h *Hunter) FindChannelByPath(channel string) (error, Channel) {
 func (h *Hunter) Channels() ([]Channel, error) {
 	var channels []Channel
 
-	if h.Slug == "" {
-		return nil, errors.New("model not exists")
-	}
-
 	db, err := sqlite.GetDb(h.Slug)
 	if err != nil {
 		return nil, err
@@ -104,7 +100,8 @@ func (h *Hunter) Channels() ([]Channel, error) {
 	err = db.Select(&channels, `select c.id, c.path, c.created_at, count(r.id) request_count
 										from channels as c
 												 left join requests r on c.id = r.channel_id
-										group by c.id`, h.Slug)
+										group by c.id
+										order by c.created_at desc`)
 	if err != nil {
 		return nil, err
 	}
