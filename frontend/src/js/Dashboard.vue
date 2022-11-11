@@ -204,7 +204,12 @@ export default {
       })
     },
     connect: function () {
-      let socket = new WebSocket("ws://" + document.location.hostname + ":8080/root");
+      let wsProtocol = "ws://"
+      if (window.location.protocol === 'https:') {
+        wsProtocol = 'wss://'
+      }
+
+      let socket = new WebSocket(wsProtocol + document.location.hostname + ":8080/root");
 
       socket.onmessage = event => {
         const response = JSON.parse(event.data)
