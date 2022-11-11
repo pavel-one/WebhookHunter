@@ -1,0 +1,41 @@
+- name: Check if the storage exists
+  stat:
+    path: "{{ BASE_PATH }}storage"
+  register: dir_to_check
+  tags: configuration
+
+- name: Copy bin file
+  copy:
+    src: '{{ playbook_dir }}/../tmp/app'
+    mode: 'a+x'
+    dest: '{{ BASE_PATH }}/'
+  tags: configuration
+
+- name: Create docker compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: '{{BASE_PATH}}docker-compose.yml'
+  tags: configuration
+
+- name: Pulling image
+  shell: |
+    docker-compose pull
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration
+
+- name: Create storage
+  when: not dir_to_check.stat.exists
+  shell: |
+    mkdir storage
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration
+
+- name: Start app
+  shell: |
+    docker-compose down
+    docker-compose up -d
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration

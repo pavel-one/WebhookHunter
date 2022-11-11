@@ -1,14 +1,14 @@
 USER:=$(shell id -u)
 GROUP:=$(shell id -g)
 
+deploy.app:
+	cd frontend; npm install && npx mix
+	make build
+	ansible-playbook -i deploy/hosts.yml deploy/server.yml -t configuration -e @deploy/vars/server.yml -e "USER=1000" -e "GROUP=1000" --ask-vault-pass
 init:
 	ansible-playbook -i deploy/hosts.yml deploy/local.yml -t configuration -e @deploy/vars/local.yml -e "USER=$(USER)" -e "GROUP=$(GROUP)"
-deploy:
-	ansible-playbook -i deploy/hosts.yml deploy/server.yml -t configuration -e @deploy/vars/server.yml -e "USER=$(USER)" -e "GROUP=$(GROUP)" --ask-vault-pass
 build:
 	docker compose run --rm app sh -c "CGO_ENABLED=1 go build -ldflags '-linkmode external -w -extldflags \"-static\"' -o tmp/app cmd/main.go"
-build.test:
-	docker compose run --rm app sh -c "CGO_ENABLED=1 go build -ldflags '-linkmode external -w -extldflags \"-static\"' -o tmp/test cmd/main.go"
 run:
 	docker compose run --rm app sh -c "CGO_ENABLED=1 go build -ldflags '-linkmode external -w -extldflags \"-static\"' -o tmp/app cmd/main.go && ./tmp/app"
 up:

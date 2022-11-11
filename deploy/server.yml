@@ -2,6 +2,6 @@
   hosts:
     - pavel-one
   roles:
-    - local
+    - server
   gather_facts: no
   serial: 2
