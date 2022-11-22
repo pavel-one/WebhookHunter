@@ -3,10 +3,10 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/models"
+	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"log"
 	"net/http"
 )
@@ -77,7 +77,7 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 	defer connection.Close()
 	domain := helpers.GetDomainWithHost(r.Host)
 
-	channel = mux.Vars(r)["channel"]
+	channel = r.RequestURI[1:len(r.RequestURI)]
 	log.Printf("[DEBUG] Socket connect [%s] channel", channel)
 
 	if channel == "" {
@@ -91,7 +91,29 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	db, err := sqlite.GetDb(hunter.Slug)
+	if err != nil {
+		return
+	}
+
 	c.handleConnection(domain, channel, connection)
+
+	if channel != "root" {
+		var requests []models.RequestModel
+
+		_, channelModel := hunter.FindChannelByPath("/" + channel)
+		if channelModel.Id != 0 {
+			requests, _ = channelModel.GetRequests(db)
+		}
+
+		c.socketCh <- EventMessage{
+			domain,
+			channel,
+			"Load",
+			requests,
+		}.ToSocket()
+	}
+
 	defer c.dropConnection(connection, domain, channel)
 
 	for {
@@ -135,6 +157,15 @@ func (c *SocketController) handleConnection(domain string, chName string, conn *
 		}
 		return
 	}
+
+	// if channel not exists
+	if _, ok := c.Hub[domain][chName]; !ok {
+		c.Hub[domain][chName] = Connections{
+			conn: true,
+		}
+		return
+	}
+
 	// simple add new connection
 	c.Hub[domain][chName][conn] = true
 }

@@ -4,7 +4,9 @@
       {{ date }}
     </div>
     <div class="data">
-      <json-viewer theme="my-awesome-json-theme" :value="data"></json-viewer>
+      <json-viewer theme="my-awesome-json-theme" :value="request"></json-viewer>
+      <json-viewer theme="my-awesome-json-theme" :value="headers"></json-viewer>
+      <json-viewer theme="my-awesome-json-theme" :value="query"></json-viewer>
     </div>
   </div>
 </template>
@@ -16,7 +18,10 @@ export default {
   components: {JsonViewer},
   props: {
     date: String,
-    data: JSON
+    request: JSON,
+    headers: JSON,
+    query: JSON,
+    path: String,
   }
 }
 </script>

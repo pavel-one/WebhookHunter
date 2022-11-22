@@ -46,8 +46,9 @@ func main() {
 	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
-	socket.GET("/", socketController.Connect)
-	socket.GET("/{channel:[a-zA-Z0-9]+}", socketController.Connect)
+	//socket.GET("/", socketController.Connect)
+	//socket.GET("/{channel:[a-zA-Z0-9]+}", socketController.Connect)
+	socket.Prefix("/", socketController.Connect)
 
 	go app.ApiRun("3000", fatalChan)
 	go socket.ApiRun("8080", fatalChan)

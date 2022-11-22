@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item">
+  <div class="menu-item" @click="$emit('changeChannel', name)">
     <div class="name">{{ name }}</div>
     <div class="count">Сообщений ({{ count }})</div>
     <div class="date">{{ date }}</div>

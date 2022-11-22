@@ -59,3 +59,12 @@ func (c *Channel) GetCounts(db *sqlx.DB) (model ChannelRequestsCount, err error)
 
 	return model, err
 }
+
+func (c *Channel) GetRequests(db *sqlx.DB) (requests []RequestModel, err error) {
+	err = db.Select(&requests, "SELECT * FROM requests WHERE channel_id=$1", c.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return requests, err
+}

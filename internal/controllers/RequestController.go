@@ -30,7 +30,7 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	var RequestModel models.RequestModel
 	var body []byte
 
-	channel = strings.ReplaceAll(r.RequestURI, "/request/", "/")
+	channel = strings.ReplaceAll(r.RequestURI, "/api/v1/request/", "/")
 	if channel == "" {
 		channel = "/"
 	}
