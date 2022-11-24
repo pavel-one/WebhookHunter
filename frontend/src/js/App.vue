@@ -1,14 +1,13 @@
 <template>
-  <div>
-    <home v-if="!login"></home>
-    <dashboard v-else></dashboard>
-  </div>
+  <home v-if="!login"></home>
+  <dashboard v-else></dashboard>
 </template>
 
 <script>
 import Home from "./Home";
 import Dashboard from "./Dashboard";
 import axios from "axios";
+
 export default {
   components: {Dashboard, Home},
   data: function () {
@@ -32,7 +31,7 @@ export default {
         if (window.location.port) {
           redirectUrl = redirectUrl + ':' + window.location.port
         }
-        window.location.href = redirectUrl
+        window.location.href = redirectUrl + "/ui/"
         return
       }
 

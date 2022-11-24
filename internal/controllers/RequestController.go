@@ -37,12 +37,12 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 
 	if err := hunter.FindBySlug(domain); err != nil {
 		log.Printf("[ERROR] find hunter error %s", err)
-		c.Error(w, http.StatusBadRequest, errors.New("hunter not found"))
+		http.Redirect(w, r, "/ui/", http.StatusMovedPermanently)
 		return
 	}
 
 	if hunter.Slug == "" {
-		c.Error(w, http.StatusNotFound, errors.New("hunter not found"))
+		http.Redirect(w, r, "/ui/", http.StatusMovedPermanently)
 		return
 	}
 
@@ -154,6 +154,13 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		Channel: "root",
 		Event:   "UpdateCount",
 		Data:    counts,
+	}.ToSocket()
+
+	c.socketCh <- EventMessage{
+		Domain:  hunter.Slug,
+		Channel: chModel.GetChannel(),
+		Event:   "Add",
+		Data:    RequestModel,
 	}.ToSocket()
 
 	c.JSON(w, http.StatusCreated, map[string]any{

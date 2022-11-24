@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item" @click="$emit('changeChannel', name)">
+  <div class="menu-item" :class="{active: active}" @click="$emit('changeChannel', name)">
     <div class="name">{{ name }}</div>
     <div class="count">Сообщений ({{ count }})</div>
     <div class="date">{{ date }}</div>
@@ -17,7 +17,11 @@ export default {
     id: Number,
     name: String,
     count: Number,
-    date: String
+    date: String,
+    active: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
     delete: function () {

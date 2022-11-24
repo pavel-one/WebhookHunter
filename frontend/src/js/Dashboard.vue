@@ -1,34 +1,35 @@
 <template>
-  <div>
-    <div class="dashboard-container">
-      <transition-group tag="div" name="slide-fade" class="menu">
-          <menu-item v-for="item in menu"
-                     :key="item.id"
-                     :id="item.id"
-                     :name="item.path"
-                     :count="item.count"
-                     @changeChannel="changeChannel"
-                     :date="item.date"></menu-item>
-      </transition-group>
-      <div class="logs">
-        <div v-if="!this.connection" class="wait">
-          <div class="icon">
-            <font-awesome-icon icon="fa-solid fa-water" />
-          </div>
-          <div class="text">
-            Select channel
-          </div>
+  <div class="dashboard-container">
+    <transition-group tag="div" name="slide-fade" class="menu">
+      <menu-item v-for="item in menu"
+                 :key="item.id"
+                 :id="item.id"
+                 :name="item.path"
+                 :count="item.count"
+                 :active="item.active"
+                 @changeChannel="changeChannel"
+                 :date="item.date">
+      </menu-item>
+    </transition-group>
+    <div class="logs">
+      <div v-if="!this.connection" class="wait">
+        <div class="icon">
+          <font-awesome-icon icon="fa-solid fa-water"/>
         </div>
-        <div v-else>
-          <log-item v-for="log in logs"
-                    :date="log.created_at"
-                    :request="log.request"
-                    :headers="log.headers"
-                    :query="log.query"
-                    :path="log.path"
-          ></log-item>
+        <div class="text">
+          Select channel
         </div>
       </div>
+      <transition-group tag="div" name="slide-fade" v-else>
+        <log-item v-for="log in logs"
+                  :key="log.id"
+                  :date="log.created_at"
+                  :request="log.request"
+                  :headers="log.headers"
+                  :query="log.query"
+                  :path="log.path"
+        ></log-item>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -37,8 +38,10 @@
 import MenuItem from "./chunks/menu-item";
 import LogItem from "./chunks/log-item";
 import axios from "axios";
+import Logo from "./components/Logo";
+
 export default {
-  components: {MenuItem, LogItem},
+  components: {Logo, MenuItem, LogItem},
   data: function () {
     return {
       connection: null,
@@ -104,6 +107,15 @@ export default {
       }
     },
     changeChannel: function (channelName) {
+      this.menu.forEach((item, index) => {
+        if (item.path === channelName) {
+          console.log(index, channelName, item)
+          this.menu[index].active = true
+        } else {
+          this.menu[index].active = false
+        }
+      })
+
       let wsProtocol = "ws://"
       if (window.location.protocol === 'https:') {
         wsProtocol = 'wss://'
@@ -134,6 +146,9 @@ export default {
           case 'Load':
             this.logs = response.data
             break
+          case 'Add':
+            console.log('ADD!')
+            this.logs.unshift(response.data)
         }
       };
     }
@@ -146,20 +161,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .wait {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    text-transform: uppercase;
-  }
+.wait {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  text-transform: uppercase;
+}
 
-  .icon {
-    font-size: 5em;
-    color: #20c984;
-    text-shadow: 0 0 20px #20c984;
-  }
+.dashboard-logo {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  left: 0;
+  opacity: .5;
+}
+
+.icon {
+  font-size: 5em;
+  color: #20c984;
+  text-shadow: 0 0 20px #20c984;
+}
 </style>

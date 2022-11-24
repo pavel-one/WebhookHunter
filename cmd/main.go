@@ -38,16 +38,15 @@ func main() {
 	app.POST("/api/v1/check/", hunterController.Check)
 	app.GET("/api/v1/channels/", hunterController.GetChannels)
 	app.DELETE("/api/v1/channels/{id:[0-9]+}", hunterController.DropChannel)
-	app.Prefix("/api/v1/request/", requestController.NewRequest)
 
 	//load static files
-	app.Static("/", "frontend")
+	app.Static("/ui", "frontend")
+
+	app.Prefix("/", requestController.NewRequest)
 
 	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)
 	socket.Router.NotFoundHandler = controllers.Handler404
-	//socket.GET("/", socketController.Connect)
-	//socket.GET("/{channel:[a-zA-Z0-9]+}", socketController.Connect)
 	socket.Prefix("/", socketController.Connect)
 
 	go app.ApiRun("3000", fatalChan)

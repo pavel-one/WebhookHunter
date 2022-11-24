@@ -43,20 +43,31 @@ body {
   color: $text-color;
 }
 
+#app {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex-direction: column;
+}
+
 .dashboard-container {
-  //background: #191919;
+  position: relative;
   min-width: 800px;
+  width: 70%;
   display: flex;
   flex-direction: row;
-  //justify-content: center;
   box-shadow: $default-shadow;
-  height: 600px;
+  min-height: 600px;
+  height: 70%;
 
   .menu {
     border-right: 1px solid #222222;
-    width: 300px;
+    width: 30%;
     height: 100%;
     overflow-y: auto;
+    position: relative;
 
     .menu-item {
       padding: 10px 20px;
@@ -113,7 +124,7 @@ body {
   }
 
   .logs {
-    width: 600px;
+    width: 70%;
     height: 100%;
     overflow-y: auto;
 

@@ -68,3 +68,7 @@ func (c *Channel) GetRequests(db *sqlx.DB) (requests []RequestModel, err error) 
 
 	return requests, err
 }
+
+func (c *Channel) GetChannel() string {
+	return c.Path[1:len(c.Path)]
+}

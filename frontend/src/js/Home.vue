@@ -24,7 +24,7 @@ export default {
         if (window.location.port) {
           redirect = redirect + ':' + window.location.port
         }
-        window.location.href = redirect
+        window.location.href = redirect + '/ui/'
       }
 
       console.log()

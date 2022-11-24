@@ -1,6 +1,6 @@
 <template>
   <div class="logo-wrapper">
-    <div class="logo">
+    <div v-if="!small" class="logo">
       <div class="text">
         PAVEL
       </div>
@@ -10,5 +10,14 @@
       </div>
     </div>
     <div class="post-title">HOOK HUNTER</div>
+    <slot></slot>
   </div>
 </template>
+
+<script>
+export default {
+  props: {
+    small: Boolean
+  }
+}
+</script>
