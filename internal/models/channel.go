@@ -61,7 +61,7 @@ func (c *Channel) GetCounts(db *sqlx.DB) (model ChannelRequestsCount, err error)
 }
 
 func (c *Channel) GetRequests(db *sqlx.DB) (requests []RequestModel, err error) {
-	err = db.Select(&requests, "SELECT * FROM requests WHERE channel_id=$1", c.Id)
+	err = db.Select(&requests, "SELECT * FROM requests WHERE channel_id=$1 ORDER BY created_at desc", c.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -70,5 +70,11 @@ func (c *Channel) GetRequests(db *sqlx.DB) (requests []RequestModel, err error) 
 }
 
 func (c *Channel) GetChannel() string {
-	return c.Path[1:len(c.Path)]
+	channel := c.Path[1:len(c.Path)]
+
+	if channel == "" {
+		channel = "/"
+	}
+
+	return channel
 }

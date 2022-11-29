@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,9 @@ import (
 	"net/http"
 	"strings"
 )
+
+//go:embed favicon.svg
+var Favicon []byte
 
 type RequestController struct {
 	BaseController
@@ -30,9 +34,15 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 	var RequestModel models.RequestModel
 	var body []byte
 
-	channel = strings.ReplaceAll(r.RequestURI, "/api/v1/request/", "/")
+	channel = r.RequestURI
 	if channel == "" {
 		channel = "/"
+	}
+
+	if channel == "/favicon.ico" {
+		w.Header().Set("Content-Type", "image/svg+xml")
+		w.Write(Favicon)
+		return
 	}
 
 	if err := hunter.FindBySlug(domain); err != nil {
@@ -156,11 +166,13 @@ func (c *RequestController) NewRequest(w http.ResponseWriter, r *http.Request) {
 		Data:    counts,
 	}.ToSocket()
 
+	ch := chModel.GetChannel()
+
 	c.socketCh <- EventMessage{
 		Domain:  hunter.Slug,
-		Channel: chModel.GetChannel(),
+		Channel: ch,
 		Event:   "Add",
-		Data:    RequestModel,
+		Data:    models.FormatRequest(RequestModel),
 	}.ToSocket()
 
 	c.JSON(w, http.StatusCreated, map[string]any{

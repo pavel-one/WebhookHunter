@@ -11,6 +11,8 @@ services:
   app:
     image: orendat/go:latest
     restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
     volumes:
       - ./app:/usr/src/app/app
       - ./storage:/usr/src/app/storage

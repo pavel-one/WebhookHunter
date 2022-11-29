@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import url('https://fonts.cdnfonts.com/css/quicksand');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
 
 $accent-font: 'Bebas Neue', sans-serif;
 $default-font: 'Quicksand Book', sans-serif;
@@ -11,7 +12,6 @@ $text-color: #909090;
 $text-color2: #5a5a5a;
 
 * {
-  font-family: $default-font;
   box-sizing: border-box;
 
   &::-webkit-scrollbar {
@@ -41,6 +41,7 @@ body {
   justify-content: center;
   height: 100%;
   color: $text-color;
+  font-family: $default-font;
 }
 
 #app {
@@ -68,6 +69,11 @@ body {
     height: 100%;
     overflow-y: auto;
     position: relative;
+    transition: .25s;
+
+    &.selected {
+      width: 13%;
+    }
 
     .menu-item {
       padding: 10px 20px;
@@ -87,6 +93,7 @@ body {
         justify-content: center;
         opacity: 0;
         font-size: 1.5em;
+
         &:hover {
           color: $accent-color;
         }
@@ -116,6 +123,7 @@ body {
         .buttons {
           opacity: 1;
         }
+
         .name {
           color: $accent-color;
         }
@@ -127,6 +135,10 @@ body {
     width: 70%;
     height: 100%;
     overflow-y: auto;
+
+    &.selected {
+      width: 87%;
+    }
 
     .log-item {
       width: 100%;
@@ -240,7 +252,7 @@ body {
   white-space: nowrap;
   color: #525252;
   font-size: 14px;
-  font-family: Consolas, Menlo, Courier, monospace;
+  font-family: 'Fira Code', Consolas, Menlo, Courier, monospace !important;
   box-shadow: $default-shadow;
 
   .jv-ellipsis {
@@ -385,11 +397,88 @@ body {
 .slide-up-leave-active {
   transition: all 0.25s ease-out;
 }
+
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(30px);
 }
+
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-30px);
+}
+
+@media screen and (max-width: 1921px) {
+  .dashboard-container {
+    width: 90%;
+    .menu {
+      width: 30%;
+      &.selected {
+        width: 13%;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1620px) {
+  .dashboard-container {
+    width: 95%;
+    .menu {
+      width: 30%;
+      &.selected {
+        width: 20%;
+      }
+    }
+    .logs {
+      &.selected {
+        width: 80%;
+      }
+    }
+  }
+}
+@media screen and (max-width: 1050px) {
+  .dashboard-container {
+    width: 99%;
+    .menu {
+      width: 30%;
+      &.selected {
+        width: 20%;
+      }
+    }
+    .logs {
+      &.selected {
+        width: 80%;
+      }
+      .log-item {
+        .data > div {
+          width: 30%;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 770px) {
+  .dashboard-container {
+    width: 99%;
+    min-width: auto;
+    height: auto;
+    .menu {
+      width: 30%;
+      &.selected {
+        width: 0;
+        opacity: 0;
+      }
+    }
+    .logs {
+      &.selected {
+        width: 99%;
+      }
+      .log-item {
+        .data > div {
+          width: 100%;
+        }
+      }
+    }
+  }
 }

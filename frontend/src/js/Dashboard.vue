@@ -1,6 +1,12 @@
 <template>
+  <div class="description">
+    Send any request <br>
+    <span class="bg">
+      {{ currentUrl }}/{any*}
+    </span>
+  </div>
   <div class="dashboard-container">
-    <transition-group tag="div" name="slide-fade" class="menu">
+    <transition-group tag="div" name="slide-fade" class="menu" :class="{'selected': this.connection}">
       <menu-item v-for="item in menu"
                  :key="item.id"
                  :id="item.id"
@@ -11,16 +17,33 @@
                  :date="item.date">
       </menu-item>
     </transition-group>
-    <div class="logs">
+    <div class="logs" :class="{'selected': this.connection}">
       <div v-if="!this.connection" class="wait">
         <div class="icon">
-          <font-awesome-icon icon="fa-solid fa-water"/>
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ripple" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M3 7c3 -2 6 -2 9 0s6 2 9 0"></path>
+            <path d="M3 17c3 -2 6 -2 9 0s6 2 9 0"></path>
+            <path d="M3 12c3 -2 6 -2 9 0s6 2 9 0"></path>
+          </svg>
         </div>
         <div class="text">
-          Select channel
+          SELECT CHANNEL
         </div>
       </div>
-      <transition-group tag="div" name="slide-fade" v-else>
+      <div v-else-if="!this.logs" class="wait">
+        <div class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M7 4v16l13 -8z"></path>
+          </svg>
+        </div>
+        <div class="text">
+          Send any request to <br>
+          <span class="bg">{{ currentUrl }}</span>
+        </div>
+      </div>
+      <div v-else>
         <log-item v-for="log in logs"
                   :key="log.id"
                   :date="log.created_at"
@@ -29,7 +52,7 @@
                   :query="log.query"
                   :path="log.path"
         ></log-item>
-      </transition-group>
+      </div>
     </div>
   </div>
 </template>
@@ -46,7 +69,8 @@ export default {
     return {
       connection: null,
       menu: [],
-      logs: []
+      logs: [],
+      currentUrl: ''
     }
   },
   methods: {
@@ -66,6 +90,10 @@ export default {
       })
     },
     addChannel: function (data) {
+      if (!this.menu) {
+        this.menu = []
+      }
+
       this.menu.unshift(data)
     },
     dropChannel: function (data) {
@@ -147,7 +175,10 @@ export default {
             this.logs = response.data
             break
           case 'Add':
-            console.log('ADD!')
+            if (!this.logs) {
+              this.logs = []
+            }
+
             this.logs.unshift(response.data)
         }
       };
@@ -156,11 +187,24 @@ export default {
   mounted() {
     this.connect()
     this.getChannels()
+    this.currentUrl = window.location.href.replace('/ui/', '')
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.bg {
+  background: #000000;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 50%);
+}
+.description {
+  font-size: 1.5em;
+  margin: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
 .wait {
   width: 100%;
   height: 100%;
@@ -170,6 +214,11 @@ export default {
   align-items: center;
   font-size: 2em;
   text-transform: uppercase;
+  .text {
+    text-align: center;
+    line-height: 1.2;
+    text-transform: none;
+  }
 }
 
 .dashboard-logo {
@@ -184,5 +233,10 @@ export default {
   font-size: 5em;
   color: #20c984;
   text-shadow: 0 0 20px #20c984;
+
+  .icon-tabler {
+    width: 150px;
+    height: 150px;
+  }
 }
 </style>

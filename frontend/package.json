@@ -20,11 +20,8 @@
     "vue-loader": "^16.8.3"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.2.0",
-    "@fortawesome/free-regular-svg-icons": "^6.2.0",
-    "@fortawesome/free-solid-svg-icons": "^6.2.0",
-    "@fortawesome/vue-fontawesome": "^3.0.1",
     "axios": "^0.27.2",
-    "vue-json-viewer": "^3.0.4"
+    "vue-json-viewer": "^3.0.4",
+    "vue-tabler-icons": "^2.16.0"
   }
 }

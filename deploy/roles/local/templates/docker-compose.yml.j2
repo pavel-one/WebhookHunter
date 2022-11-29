@@ -12,6 +12,7 @@ services:
     image: orendat/go:latest
     user: "{{USER}}:{{GROUP}}"
     environment:
+      - TZ=Europe/Moscow
       - GOCACHE=/usr/src/app/tmp/cache
     volumes:
       - .:/usr/src/app

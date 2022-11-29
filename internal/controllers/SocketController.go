@@ -110,7 +110,7 @@ func (c *SocketController) Connect(w http.ResponseWriter, r *http.Request) {
 			domain,
 			channel,
 			"Load",
-			requests,
+			models.FormatRequests(requests),
 		}.ToSocket()
 	}
 
