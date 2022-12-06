@@ -19,7 +19,7 @@ func (a *App) Init() {
 	a.Router = mux.NewRouter()
 }
 
-func (a *App) ApiRun(port string, ch chan error) {
+func (a *App) Run(port string, ch chan error) {
 	a.Server = &http.Server{
 		Handler:      a.Router,
 		Addr:         ":" + port,

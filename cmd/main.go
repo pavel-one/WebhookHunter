@@ -49,8 +49,8 @@ func main() {
 	socket.Router.NotFoundHandler = controllers.Handler404
 	socket.Prefix("/", socketController.Connect)
 
-	go app.ApiRun("3000", fatalChan)
-	go socket.ApiRun("8080", fatalChan)
+	go app.Run("3000", fatalChan)
+	go socket.Run("8080", fatalChan)
 
 	switch runtime.GOOS {
 	case "linux":

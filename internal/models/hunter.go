@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	petname "github.com/dustinkirkland/golang-petname"
+	"github.com/pavel-one/WebhookWatcher/internal/helpers"
 	"github.com/pavel-one/WebhookWatcher/internal/sqlite"
 	"os"
 )
@@ -12,7 +13,7 @@ type Hunter struct {
 }
 
 func (h *Hunter) Create() error {
-	h.Slug = petname.Generate(2, "-")
+	h.Slug = petname.Generate(2, "-") + "-" + helpers.RandString(5)
 	_, err := os.Stat("./storage/users/")
 	if err != nil {
 		h.Slug = "default"

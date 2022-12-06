@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func TrimJson(jsonBytes []byte) []byte {
 	buffer := new(bytes.Buffer)
@@ -39,4 +42,12 @@ func Handler404(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[DEBUG] [%s] 404 %s", r.Method, r.URL.String())
+}
+
+func RandString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
