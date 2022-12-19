@@ -37,8 +37,7 @@ func main() {
 
 	// all routes without /api /ui
 	app.Router.MatcherFunc(func(request *http.Request, match *mux.RouteMatch) bool {
-		find, _ := regexp.MatchString(`^/(\bapi|ui\b.*).*$`, request.RequestURI)
-		if find {
+		if find, _ := regexp.MatchString(`^/(\bapi|ui\b.*).*$`, request.RequestURI); find {
 			return false
 		}
 
