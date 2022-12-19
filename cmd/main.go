@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/pavel-one/WebhookWatcher/internal/base"
 	"github.com/pavel-one/WebhookWatcher/internal/controllers"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 )
 
@@ -32,6 +35,16 @@ func main() {
 	app.Router.Use(controllers.LoggingMiddleware)
 	app.Router.NotFoundHandler = controllers.Handler404
 
+	// all routes without /api /ui
+	app.Router.MatcherFunc(func(request *http.Request, match *mux.RouteMatch) bool {
+		find, _ := regexp.MatchString(`^/(\bapi|ui\b.*).*$`, request.RequestURI)
+		if find {
+			return false
+		}
+
+		return true
+	}).PathPrefix("/").HandlerFunc(requestController.NewRequest)
+
 	//api
 	app.GET("/api/v1/", hunterController.Index)
 	app.POST("/api/v1/", hunterController.Create)
@@ -41,8 +54,6 @@ func main() {
 
 	//load static files
 	app.Static("/ui", "frontend")
-
-	app.Prefix("/", requestController.NewRequest)
 
 	//websocket
 	socket.Router.Use(controllers.LoggingMiddleware)

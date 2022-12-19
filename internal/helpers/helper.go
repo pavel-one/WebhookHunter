@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz")
 
 func TrimJson(jsonBytes []byte) []byte {
 	buffer := new(bytes.Buffer)
