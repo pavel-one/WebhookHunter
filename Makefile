@@ -2,7 +2,7 @@ USER:=$(shell id -u)
 GROUP:=$(shell id -g)
 
 deploy.app:
-	cd frontend; npm install && npx mix
+	cd frontend; npm install && npx mix build -p
 	make build
 	ansible-playbook -i deploy/hosts.yml deploy/server.yml -t configuration -e @deploy/vars/server.yml -e "USER=1000" -e "GROUP=1000" --ask-vault-pass
 init:

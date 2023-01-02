@@ -8,6 +8,4 @@ mix.js('src/js/app.js', 'dist')
     .vue({
         version: 3
     })
-
 mix.sass('src/scss/main.scss', 'dist')
-
